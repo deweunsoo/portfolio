@@ -1211,14 +1211,19 @@
 
       addFadeGroup([
         '<span style="color:var(--dim)">●</span> <span style="color:#D9D9D9;font-weight:700;">FNS(주)</span>  <span style="color:var(--dim)">2021.07 – 2023.11</span>',
-        '  <span style="color:#aaa">UXUI팀 ㅣ UXUI 디자이너</span>',
-        '',
-        '   <span style="color:var(--dim)">└</span> <span style="color:#aaa">글로벌 한류 플랫폼 소셜 커뮤니티 앱서비스 개편</span>',
-        '   <span style="color:var(--dim)">└</span> <span style="color:#aaa">한류홀딩스 기업사이트 구축</span>',
-        '   <span style="color:var(--dim)">└</span> <span style="color:#aaa">ERP 서비스페이지, 웹, 모바일 리뉴얼</span>',
       ]);
+
+      var fnsLines = [
+        '<span style="color:#aaa">UXUI팀 ㅣ UXUI 디자이너</span>',
+        '',
+        '<span style="color:var(--dim)">└</span> <span style="color:#aaa">글로벌 한류 플랫폼 소셜 커뮤니티 앱서비스 개편</span>',
+        '<span style="color:var(--dim)">└</span> <span style="color:#aaa">한류홀딩스 기업사이트 구축</span>',
+        '<span style="color:var(--dim)">└</span> <span style="color:#aaa">ERP 서비스페이지, 웹, 모바일 리뉴얼</span>',
+        '',
+      ];
+      var fnsEls = fnsLines.map(function(l) { var el = addLine(l, 'timeline-line'); el.style.opacity = '0'; el.style.transition = 'opacity 400ms ease'; el.style.backgroundImage = 'none'; return el; });
+      requestAnimationFrame(function() { fnsEls.forEach(function(el) { el.style.opacity = '1'; }); });
       await sleep(200);
-      addLine('');
       addLine('');
 
       addFadeGroup([
@@ -1229,7 +1234,7 @@
 
       addFadeGroup([
         '<span style="color:var(--dim)">●</span> <span style="color:#D9D9D9;font-weight:700;">백석대학교</span>  <span style="color:var(--dim)">2013.03 – 2017.02</span>',
-        '   <span style="color:#aaa">산업디자인과 졸업</span>',
+        '<span style="color:transparent">●</span> <span style="color:#aaa">산업디자인과 졸업</span>',
       ]);
       await sleep(200);
 
@@ -1346,15 +1351,16 @@
       addFadeGroup([
         '<span style="color:var(--dim)">●</span> <span style="color:#D9D9D9;font-weight:700;">ERP 서비스페이지, 웹, 모바일 리뉴얼</span>',
       ]);
-      addFadeGroup([
-        '   <span style="color:var(--dim)">2021.09 – 2021.12</span>',
-        '   <span style="color:var(--dim)">└</span> <span style="color:#aaa">분산된 PC 보안 기능의 복잡한 관리 문제 정의</span>',
-        '   <span style="color:var(--dim)">└</span> <span style="color:#aaa">관리자 중심 업무 흐름을 모바일 환경에 최적화</span>',
-        '   <span style="color:var(--dim)">└</span> <span style="color:#aaa">기능 나열형 구조에서 업무 중심 플로우 기반 UX로 전환</span>',
+      var erpEls = addWorkTimeline([
+        '<span style="color:var(--dim)">2021.09 – 2021.12</span>',
+        '<span style="color:var(--dim)">└</span> <span style="color:#aaa">분산된 PC 보안 기능의 복잡한 관리 문제 정의</span>',
+        '<span style="color:var(--dim)">└</span> <span style="color:#aaa">관리자 중심 업무 흐름을 모바일 환경에 최적화</span>',
+        '<span style="color:var(--dim)">└</span> <span style="color:#aaa">기능 나열형 구조에서 업무 중심 플로우 기반 UX로 전환</span>',
+        '',
       ]);
+      erpEls.forEach(function(el) { el.style.backgroundImage = 'none'; });
       await sleep(200);
 
-      addLine('');
       addLine('');
       addLine('');
     },
