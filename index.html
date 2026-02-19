@@ -1,0 +1,2766 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>이슬-seul,Lee-product-design-portfolio</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
+  @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@1,400&display=swap');
+
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #000000;
+    --bg-card: #101010;
+    --fg: #D9D9D9;
+    --accent: #FFD725;
+    --accent-glow: #FFD72580;
+    --green: #00ff9c;
+    --cyan: #00D084;
+    --yellow: #FFD725;
+    --red: #ff6568;
+    --magenta: #d2a8ff;
+    --dim: #5F5F5F;
+    --border: #272727;
+    --prompt-user: #FFD725;
+    --prompt-host: #00D084;
+    --prompt-path: #e8a84c;
+  }
+
+  html, body {
+    height: 100%;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+    font-size: 14px;
+    line-height: 1.6;
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── Outer Frame ── */
+  #frame {
+    position: fixed;
+    inset: 12px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--bg);
+    box-shadow: 0 0 40px rgba(255, 215, 37, 0.03), inset 0 0 80px rgba(0,0,0,0.3);
+  }
+
+  /* ── Title Bar (macOS style) ── */
+  #titlebar {
+    display: flex;
+    align-items: center;
+    padding: 12px 84px 12px 16px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-card);
+    flex-shrink: 0;
+    gap: 12px;
+    user-select: none;
+  }
+
+  .window-dots {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    position: relative;
+  }
+  .dot.red    { background: #ff5f57; box-shadow: 0 0 6px #ff5f5740; }
+  .dot.yellow { background: #febc2e; box-shadow: 0 0 6px #febc2e40; }
+  .dot.green  { background: #28c840; box-shadow: 0 0 6px #28c84040; }
+
+  .titlebar-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    color: var(--fg);
+    font-size: 13px;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  .titlebar-center {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+  }
+
+  .titlebar-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 14px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: #161616;
+    color: var(--dim);
+    font-size: 12px;
+    letter-spacing: 0.3px;
+  }
+
+  .titlebar-badge .star {
+    color: var(--accent);
+  }
+
+  .titlebar-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 12px;
+    color: var(--dim);
+    white-space: nowrap;
+  }
+
+  .titlebar-right .stat-value {
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  /* ── Terminal Area ── */
+  #terminal {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px 84px;
+    cursor: text;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+
+  #terminal::-webkit-scrollbar { width: 6px; }
+  #terminal::-webkit-scrollbar-track { background: transparent; }
+  #terminal::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  #terminal::-webkit-scrollbar-thumb:hover { background: var(--dim); }
+
+  /* ── Bottom Input Bar ── */
+  #bottombar {
+    display: flex;
+    align-items: center;
+    padding: 14px 84px;
+    border-top: 1px solid var(--border);
+    background: var(--bg-card);
+    flex-shrink: 0;
+    gap: 10px;
+  }
+
+  #bottombar .prompt-arrow {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+  }
+
+  #bottombar #cmd-input {
+    background: none;
+    border: none;
+    color: var(--fg);
+    font-family: inherit;
+    font-size: 14px;
+    line-height: 1.6;
+    outline: none;
+    flex: 1;
+    caret-color: var(--accent);
+    caret-shape: bar;
+    padding: 0;
+    margin: 0;
+  }
+  @supports (caret-width: 2px) {
+    #bottombar #cmd-input { caret-width: 2px; }
+  }
+
+  #bottombar #cmd-input::placeholder {
+    color: #888888;
+    opacity: 1;
+  }
+
+  /* ── Career Timeline ── */
+  .timeline-line {
+    margin-left: 4px;
+    padding-left: 14px;
+    border-left: none;
+    background-image: linear-gradient(to bottom, #555 4px, transparent 4px);
+    background-size: 1px 12px;
+    background-repeat: repeat-y;
+    background-position: 0 0;
+  }
+
+  /* ── Navigation Panel ── */
+  #nav-panel {
+    position: fixed;
+    bottom: 78px;
+    right: 24px;
+    background: #1A1A1A;
+    border: 1px solid #333;
+    border-radius: 8px;
+    padding: 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    z-index: 100;
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+  }
+  #nav-panel.show { opacity: 1; transform: translateY(0); }
+  .nav-panel-header {
+    padding: 8px 14px;
+    color: #999;
+    border-bottom: 1px solid #333;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .nav-panel-arrows { color: #555; font-size: 11px; }
+  .nav-panel-row { cursor: pointer;
+    padding: 5px 14px;
+    color: #ccc;
+    display: flex;
+    gap: 8px;
+    transition: background 0.15s ease;
+  }
+  .nav-panel-row:hover { background: #262626; }
+  .nav-panel-row:last-child { padding-bottom: 8px; border-radius: 0 0 8px 8px; }
+  .nav-panel-row:first-of-type { padding-top: 8px; }
+  .nav-panel-key { color: #00D084; min-width: 24px; }
+  .nav-panel-cmd { color: #aaa; min-width: 72px; }
+  .nav-panel-desc { color: #666; }
+
+  #bottombar .enter-icon {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    opacity: 1;
+  }
+
+  /* ── Scanline Overlay ── */
+  .scanlines {
+    pointer-events: none;
+    z-index: 9999;
+    background: repeating-linear-gradient(0deg, rgba(0,0,0,0.03) 0 1px, transparent 1px 2px);
+    width: 100%;
+    height: 100%;
+    animation: scanline-flicker 0.1s infinite;
+    position: fixed;
+    top: 0;
+    left: 0;
+    border-radius: 12px;
+  }
+
+  /* ── Corner Decorations ── */
+  #frame::before {
+    content: '';
+    position: absolute;
+    top: -1px;
+    left: -1px;
+    right: -1px;
+    bottom: -1px;
+    border-radius: 12px;
+    pointer-events: none;
+    z-index: 10;
+    background: none;
+  }
+
+  /* ── Text Styles ── */
+  .line { white-space: pre-wrap; word-break: break-all; min-height: 1.6em; }
+  .line.green { color: var(--green); }
+  .line.cyan { color: var(--cyan); }
+  .line.accent { color: var(--accent); }
+  .line.yellow { color: var(--yellow); }
+  .line.red { color: var(--red); }
+  .line.magenta { color: var(--magenta); }
+  .line.dim { color: var(--dim); }
+  .line.bold { font-weight: 700; }
+
+  .glow-accent { text-shadow: 0 0 10px var(--accent-glow); }
+  .glow-cyan { text-shadow: 0 0 5px #00D08480, 0 0 10px #00D0844d, 0 0 20px #00D08433; }
+
+  .prompt-user { color: var(--prompt-user); font-weight: 700; text-shadow: 0 0 8px var(--accent-glow); }
+  .prompt-host { color: var(--prompt-host); font-weight: 700; }
+  .prompt-at { color: var(--dim); }
+  .prompt-colon { color: var(--fg); }
+  .prompt-path { color: var(--prompt-path); }
+  .prompt-dollar { color: var(--fg); }
+
+
+  .cursor-blink {
+    display: inline-block;
+    width: 8px;
+    height: 1.2em;
+    background: var(--accent);
+    animation: blink 1s step-end infinite, glowPulse 2s ease-in-out infinite;
+    vertical-align: text-bottom;
+  }
+
+  .ascii-art {
+    color: var(--accent);
+    font-size: 11px;
+    line-height: 1.2;
+    margin-bottom: -5.2px;
+    text-shadow: 0 0 10px var(--accent-glow);
+  }
+
+  .nav-key {
+    color: #00D084;
+    font-weight: 700;
+  }
+  .nav-label {
+    color: var(--fg);
+  }
+
+  .link { color: var(--cyan); text-decoration: underline; cursor: pointer; }
+  .link:hover { color: var(--accent); }
+
+  .tag {
+    display: inline-block;
+    color: var(--accent);
+    background: rgba(255, 215, 37, 0.1);
+    border: 1px solid rgba(255, 215, 37, 0.25);
+    padding: 1px 8px;
+    font-size: 12px;
+    margin: 2px 4px 2px 0;
+    border-radius: 3px;
+  }
+
+  .section-box {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin: 8px 0;
+    background: var(--bg-card);
+  }
+
+  .section-title {
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    text-shadow: 0 0 10px var(--accent-glow);
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .hidden { display: none; }
+
+  ::selection {
+    background: var(--accent);
+    color: var(--bg);
+  }
+
+  /* ── Animations ── */
+  @keyframes blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0; }
+  }
+  @keyframes fadeInOut {
+    0%, 100% { opacity: 0; }
+    50% { opacity: 1; }
+  }
+
+  @keyframes scanline-flicker {
+    0%  { opacity: 0.9; }
+    50% { opacity: 1; }
+    to  { opacity: 0.9; }
+  }
+
+  @keyframes glowPulse {
+    0%, 100% { text-shadow: 0 0 5px var(--accent-glow), 0 0 10px rgba(255,215,37,0.3); }
+    50%      { text-shadow: 0 0 10px rgba(255,215,37,0.8), 0 0 20px var(--accent-glow), 0 0 30px rgba(255,215,37,0.3); }
+  }
+
+  @keyframes fadeIn {
+    0%  { opacity: 0; transform: translateY(4px); }
+    to  { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes typeReveal {
+    0%  { opacity: 0; filter: blur(1px); transform: translateY(2px); }
+    to  { opacity: 1; filter: blur(0); transform: translateY(0); }
+  }
+
+  .animate-fadeIn {
+    animation: fadeIn 0.4s ease-out both;
+  }
+
+  /* ── App Slider ── */
+  .app-slider {
+    width: calc(100% + 120px);
+    margin-left: -60px;
+    height: 720px;
+    background: #000;
+    display: flex;
+    position: relative;
+    overflow: hidden;
+  }
+  .app-slider-nav {
+    position: absolute;
+    bottom: 56px;
+    left: 40px;
+    display: flex;
+    flex-direction: column;
+    z-index: 2;
+  }
+  .app-slider-nav span {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    font-family: 'Pretendard', sans-serif;
+    font-size: 14px;
+    color: var(--dim);
+    transition: color 0.3s, transform 0.3s;
+    user-select: none;
+  }
+  .app-slider-nav span:hover { color: var(--fg); }
+  .app-slider-nav span.on {
+    color: #fff;
+    font-weight: 700;
+    transform: translateX(4px);
+  }
+  .app-slider-nav span i {
+    font-style: normal;
+    font-size: 13px;
+    width: 24px;
+  }
+  .app-slider-screen {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+  .app-slider-screen img {
+    width: 280px;
+    height: 607px;
+    object-fit: cover;
+    border-radius: 28px;
+    position: absolute;
+    opacity: 0;
+    transition: opacity 0.6s ease;
+  }
+  .app-slider-screen img.on {
+    opacity: 1 !important;
+  }
+  @media (max-width: 600px) {
+    .app-slider { flex-direction: column; height: auto; }
+    .app-slider-nav { position: static; padding: 24px 20px; flex-direction: row; flex-wrap: wrap; }
+    .app-slider-nav span { font-size: 12px; }
+    .app-slider-screen { height: 560px; }
+    .app-slider-screen img { width: 260px; height: 563px; }
+  }
+
+  /* ── SCOPE-4 Dual Phone Layout ── */
+  .scope4-section {
+    width: calc(100% + 120px);
+    margin-left: -60px;
+    background: url('images/naverpay/SCOPE-4.png') center/contain no-repeat #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    position: relative;
+    aspect-ratio: 1520 / 760;
+  }
+  .scope4-phone {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    height: 100%;
+  }
+  .scope4-phone img {
+    width: 200px;
+    height: 433px;
+    object-fit: cover;
+    border-radius: 24px;
+  }
+  .scope4-phone-slider {
+    position: relative;
+    width: 200px;
+    height: 433px;
+  }
+  .scope4-phone-slider img {
+    width: 200px;
+    height: 433px;
+    object-fit: cover;
+    border-radius: 24px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    opacity: 0;
+    transition: opacity 0.6s ease;
+  }
+  .scope4-phone-slider img.on {
+    opacity: 1;
+  }
+
+  /* ── Thanks Section ── */
+  .thanks-section {
+    width: calc(100% + 120px);
+    margin-left: -60px;
+    background: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 140px 0;
+  }
+  .thanks-text {
+    font-family: 'Pretendard', sans-serif;
+    font-size: 24px;
+    font-weight: 500;
+    color: #ccc;
+    letter-spacing: 0.5px;
+    position: relative;
+    white-space: nowrap;
+    padding: 10px 16px;
+    background: transparent;
+    transition: background 0.3s ease, color 0.3s ease;
+  }
+  .thanks-text .t-char {
+    display: inline;
+    visibility: hidden;
+  }
+  .thanks-text .t-char.show {
+    visibility: visible;
+  }
+  .thanks-text .t-for-wrap {
+    display: inline;
+    padding: 12px 6px;
+    margin: 0 -6px;
+    background: transparent;
+    transition: background 0.3s ease;
+  }
+  .thanks-text .t-for-wrap.selected {
+    background: rgba(200,200,200,0.3);
+  }
+  .thanks-text .t-for-wrap.mono .t-char {
+    font-family: 'JetBrains Mono', monospace;
+    font-style: italic;
+    font-weight: 400;
+  }
+  .thanks-text.all-selected {
+    background: #ccc;
+    color: #1a1a1a;
+  }
+  .thanks-text.all-selected .t-for-wrap.mono .t-char {
+    color: #1a1a1a;
+  }
+  .thanks-text .thanks-dot {
+    display: inline-block;
+    width: 5px;
+    height: 5px;
+    background: #ccc;
+    vertical-align: baseline;
+    margin-left: 3px;
+    transition: background 0.3s ease;
+  }
+  .thanks-text .thanks-dot.show {
+    visibility: visible;
+  }
+  .thanks-text.all-selected .thanks-dot {
+    background: #1a1a1a;
+  }
+  .thanks-cursor {
+    display: inline-block;
+    width: 2px;
+    height: 0.75em;
+    background: #ccc;
+    vertical-align: 0.05em;
+    animation: thanksBlink 1s step-end infinite;
+  }
+  .thanks-text.all-selected .thanks-cursor {
+    opacity: 0;
+  }
+  @keyframes thanksBlink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0; }
+  }
+
+  @keyframes spin {
+    0%   { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  .spinning-star {
+    display: inline-block;
+    color: var(--accent);
+    animation: spin 3s linear infinite;
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 600px) {
+    html, body { font-size: 11px; }
+    .ascii-art { font-size: 7px; }
+    #frame { inset: 6px; border-radius: 8px; }
+    #terminal { padding: 12px 20px; }
+    #titlebar { padding: 10px 12px; }
+    .titlebar-right { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Outer Frame -->
+<div id="frame">
+  <!-- Title Bar -->
+  <div id="titlebar">
+    <div class="titlebar-left">
+      <div class="window-dots">
+        <div class="dot red"></div>
+        <div class="dot yellow"></div>
+        <div class="dot green"></div>
+      </div>
+      <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align: -2px; margin-right: 6px;"><path d="M14 2H6C4.9 2 4 2.9 4 4V20C4 21.1 4.9 22 6 22H18C19.1 22 20 21.1 20 20V8L14 2Z" stroke="#888888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M14 2V8H20" stroke="#888888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>이슬-seul,Lee-product-design-portfolio</span>
+    </div>
+    <div class="titlebar-center"></div>
+    <div class="titlebar-right">
+      <span>PROJECTS: <span class="stat-value" id="stat-projects">4</span></span>
+      <span>EXP: <span class="stat-value">5yr</span></span>
+      <span id="clock"></span>
+    </div>
+  </div>
+
+  <!-- Terminal -->
+  <div id="terminal">
+    <div id="output"></div>
+  </div>
+
+  <!-- Bottom Input Bar -->
+  <div id="bottombar">
+    <img class="prompt-arrow" src="images/icons/icon-arrow.svg">
+    <input type="text" id="cmd-input" placeholder="Enter를 눌러 계속하세요..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+    <img class="enter-icon" src="images/icons/icon-enter.svg">
+  </div>
+
+  <!-- Navigation Panel -->
+  <div id="nav-panel" style="display:none;">
+    <div class="nav-panel-header">Select Command <span class="nav-panel-arrows">↑↓ · ⏎</span></div>
+    <div class="nav-panel-row" data-cmd="1"><span class="nav-panel-key">[1]</span> <span class="nav-panel-cmd">/home</span> <span class="nav-panel-desc">Back to Home</span></div>
+    <div class="nav-panel-row" data-cmd="2"><span class="nav-panel-key">[2]</span> <span class="nav-panel-cmd">/about</span> <span class="nav-panel-desc">About Me</span></div>
+    <div class="nav-panel-row" data-cmd="3"><span class="nav-panel-key">[3]</span> <span class="nav-panel-cmd">/work</span> <span class="nav-panel-desc">Work Projects</span></div>
+    <div class="nav-panel-row" data-cmd="4"><span class="nav-panel-key">[4]</span> <span class="nav-panel-cmd">/project</span> <span class="nav-panel-desc">Project Detail</span></div>
+  </div>
+
+  <!-- Scanline Overlay -->
+  <div class="scanlines"></div>
+</div>
+
+<script>
+(() => {
+  // ── Config ──
+  const TYPING_SPEED   = 22;
+  const FAST_SPEED     = 8;
+  const LINE_DELAY     = 60;
+  const SSH_DELAY      = 600;
+  const HOST           = 'portfolio.dev';
+
+  // ── DOM refs ──
+  const output    = document.getElementById('output');
+  const cmdInput  = document.getElementById('cmd-input');
+  const navPanel  = document.getElementById('nav-panel');
+  const terminal  = document.getElementById('terminal');
+  const clockEl   = document.getElementById('clock');
+
+  navPanel.addEventListener('click', async function(e) {
+    var row = e.target.closest('.nav-panel-row');
+    if (!row) return;
+    var cmd = row.getAttribute('data-cmd');
+    if (!cmd) return;
+    cmdInput.value = '';
+    var navCmds = ['1','2','3','4','home','about','work','project'];
+    var moduleNames = {'1':'home','2':'about','3':'work','4':'project'};
+    if (navCmds.includes(cmd)) {
+      cmdInput.placeholder = '';
+      var modName = moduleNames[cmd] || cmd;
+      addLine('<span style="color:var(--dim)">$ cd ~/' + modName + '</span>');
+      var sysMsg = addLine('<span style="color:var(--dim)">[system] loading ' + modName + ' module...</span>');
+      sysMsg.style.opacity = '0'; sysMsg.style.transition = 'opacity 300ms ease';
+      requestAnimationFrame(function() { sysMsg.style.opacity = '1'; });
+      await sleep(400);
+    }
+    await processCommand(cmd);
+    if (highlightsShown && cmd !== '1') {
+      navPanel.style.display = 'block';
+      requestAnimationFrame(function() { navPanel.classList.add('show'); });
+    }
+    showPrompt();
+    cmdInput.focus();
+  });
+
+  let currentPath = '~';
+  let pressEnterLine = null;
+  let commandHistory = [];
+  let historyIndex = -1;
+  let cmdCount = 0;
+
+  // ── Clock ──
+  function updateClock() {
+    const now = new Date();
+    clockEl.textContent = now.toLocaleTimeString('en-US', { hour12: false });
+  }
+  updateClock();
+  setInterval(updateClock, 1000);
+
+  // ── Update Status ──
+  function updateStatus() {}
+
+  // ── Utilities ──
+  function scrollToBottom() {
+    terminal.scrollTop = terminal.scrollHeight;
+  }
+
+  function sleep(ms) {
+    return new Promise(r => setTimeout(r, ms));
+  }
+
+  function addLine(text = '', className = '') {
+    const div = document.createElement('div');
+    div.className = 'line' + (className ? ' ' + className : '');
+    div.innerHTML = text;
+    output.appendChild(div);
+    scrollToBottom();
+    return div;
+  }
+
+  async function typeText(text, speed = TYPING_SPEED, className = '') {
+    const div = addLine('', className);
+    for (let i = 0; i < text.length; i++) {
+      div.textContent += text[i];
+      scrollToBottom();
+      if (skipHomeAnim) break;
+      await sleep(speed);
+    }
+    if (skipHomeAnim) div.textContent = text;
+    return div;
+  }
+
+  function makePromptHTML(path) {
+    return `<span class="prompt-user">seul</span><span class="prompt-at">@</span><span class="prompt-host">portfolio</span><span class="prompt-colon">:</span><span class="prompt-path">${path}</span><span class="prompt-dollar">$ </span>`;
+  }
+
+  function showPrompt() {
+    cmdInput.value = '';
+    cmdInput.placeholder = 'Enter를 눌러 계속하세요...';
+    cmdInput.focus();
+    scrollToBottom();
+  }
+
+  function echoCommand(cmd) {
+    addLine(makePromptHTML(currentPath) + escapeHTML(cmd));
+  }
+
+  function escapeHTML(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  // ── Section Box helper ──
+  function addSectionBox(title, contentFn) {
+    const container = document.createElement('div');
+    container.className = 'section-box animate-fadeIn';
+    const titleDiv = document.createElement('div');
+    titleDiv.className = 'section-title';
+    titleDiv.textContent = title;
+    container.appendChild(titleDiv);
+    const body = document.createElement('div');
+    contentFn(body);
+    container.appendChild(body);
+    output.appendChild(container);
+    scrollToBottom();
+  }
+
+  function addBoxLine(parent, text, className = '') {
+    const div = document.createElement('div');
+    div.className = 'line' + (className ? ' ' + className : '');
+    div.innerHTML = text;
+    parent.appendChild(div);
+  }
+
+  // ── ASCII Art ──
+  const ASCII_PORTFOLIO = `
+██████╗  ██████╗ ██████╗ ████████╗███████╗ ██████╗ ██╗     ██╗ ██████╗
+██╔══██╗██╔═══██╗██╔══██╗╚══██╔══╝██╔════╝██╔═══██╗██║     ██║██╔═══██╗
+██████╔╝██║   ██║██████╔╝   ██║   █████╗  ██║   ██║██║     ██║██║   ██║
+██╔═══╝ ██║   ██║██╔══██╗   ██║   ██╔══╝  ██║   ██║██║     ██║██║   ██║
+██║     ╚██████╔╝██║  ██║   ██║   ██║     ╚██████╔╝███████╗██║╚██████╔╝
+╚═╝      ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚═╝      ╚═════╝ ╚══════╝╚═╝ ╚═════╝`.trim();
+
+  // ── Data (placeholders) ──
+  const DATA = {
+    name: 'Your Name',
+    title: 'Full-Stack Developer',
+    email: 'hello@yourdomain.com',
+    github: 'https://github.com/yourusername',
+    linkedin: 'https://linkedin.com/in/yourusername',
+    location: 'Seoul, South Korea',
+    bio: [
+      'Passionate developer who loves building things that live on the internet.',
+      'I specialize in crafting clean, performant, and accessible web experiences.',
+      'When I\'m not coding, you\'ll find me exploring new technologies,',
+      'contributing to open source, or drinking way too much coffee.',
+    ],
+    skills: {
+      languages:  ['JavaScript', 'TypeScript', 'Python', 'Go', 'Rust'],
+      frontend:   ['React', 'Next.js', 'Vue', 'Tailwind CSS', 'Three.js'],
+      backend:    ['Node.js', 'Express', 'FastAPI', 'PostgreSQL', 'Redis'],
+      devops:     ['Docker', 'Kubernetes', 'AWS', 'CI/CD', 'Terraform'],
+      tools:      ['Git', 'Vim', 'Linux', 'Figma', 'Notion'],
+    },
+    projects: [
+      {
+        name: 'project-alpha',
+        desc: 'A real-time collaborative code editor with AI-powered suggestions',
+        tech: ['React', 'Node.js', 'WebSocket', 'OpenAI'],
+        url: 'https://github.com/yourusername/project-alpha',
+        stars: 142,
+      },
+      {
+        name: 'neural-canvas',
+        desc: 'Interactive generative art platform using neural style transfer',
+        tech: ['Python', 'TensorFlow', 'WebGL', 'FastAPI'],
+        url: 'https://github.com/yourusername/neural-canvas',
+        stars: 89,
+      },
+      {
+        name: 'devflow-cli',
+        desc: 'Developer workflow automation tool for Git-based projects',
+        tech: ['Go', 'Cobra', 'GitHub API'],
+        url: 'https://github.com/yourusername/devflow-cli',
+        stars: 256,
+      },
+      {
+        name: 'pixel-forge',
+        desc: 'Retro-style pixel art editor with real-time collaboration',
+        tech: ['TypeScript', 'Canvas API', 'WebRTC'],
+        url: 'https://github.com/yourusername/pixel-forge',
+        stars: 67,
+      },
+    ],
+    experience: [
+      {
+        role: 'Senior Software Engineer',
+        company: 'Company Name',
+        period: '2023 - Present',
+        desc: 'Leading frontend architecture and building scalable web applications.',
+      },
+      {
+        role: 'Software Engineer',
+        company: 'Previous Company',
+        period: '2021 - 2023',
+        desc: 'Built and maintained microservices handling 10M+ requests/day.',
+      },
+      {
+        role: 'Junior Developer',
+        company: 'First Company',
+        period: '2019 - 2021',
+        desc: 'Full-stack development with React and Node.js ecosystem.',
+      },
+    ],
+    funFacts: [
+      '$ cat /dev/coffee | wc -l    →  ∞  cups consumed',
+      '$ uptime                     →  5+ years of coding',
+      '$ ls ~/hobbies               →  gaming  music  photography  hiking',
+      '$ git log --oneline | wc -l  →  3,000+ commits this year',
+      '$ cat /etc/timezone          →  Asia/Seoul (UTC+9)',
+    ],
+    education: {
+      degree: 'B.S. Computer Science',
+      school: 'University Name',
+      year: '2019',
+    },
+  };
+
+  // ── File System Simulation ──
+  const FS = {
+    '~': { type: 'dir', children: ['about.txt', 'skills.json', 'projects/', 'experience/', 'contact.txt', 'fun.sh', 'resume.pdf'] },
+    '~/about.txt': { type: 'file', content: () => [
+      `Name:     ${DATA.name}`,
+      `Title:    ${DATA.title}`,
+      `Location: ${DATA.location}`,
+      '', ...DATA.bio,
+    ]},
+    '~/skills.json': { type: 'file', content: () => [
+      '{',
+      ...Object.entries(DATA.skills).map(([k, v], i, arr) =>
+        `  "${k}": [${v.map(s => `"${s}"`).join(', ')}]${i < arr.length - 1 ? ',' : ''}`
+      ),
+      '}',
+    ]},
+    '~/projects/': { type: 'dir', children: DATA.projects.map(p => p.name + '/') },
+    '~/experience/': { type: 'dir', children: DATA.experience.map((e, i) => `${i + 1}_${e.company.toLowerCase().replace(/\s+/g, '_')}.md`) },
+    '~/contact.txt': { type: 'file', content: () => [
+      `Email:    ${DATA.email}`,
+      `GitHub:   ${DATA.github}`,
+      `LinkedIn: ${DATA.linkedin}`,
+      `Location: ${DATA.location}`,
+      '', 'Feel free to reach out! I\'m always open to interesting conversations.',
+    ]},
+    '~/fun.sh': { type: 'file', content: () => [
+      '#!/bin/bash', '# Fun facts about me', '', ...DATA.funFacts,
+    ]},
+    '~/resume.pdf': { type: 'file', content: () => [
+      `╔════════════════════════════════════════════════════╗`,
+      `║                    R E S U M E                     ║`,
+      `╠════════════════════════════════════════════════════╣`,
+      `║                                                    ║`,
+      `║  ${DATA.name.padEnd(48)}║`,
+      `║  ${DATA.title.padEnd(48)}║`,
+      `║  ${DATA.location.padEnd(48)}║`,
+      `║  ${DATA.email.padEnd(48)}║`,
+      `║                                                    ║`,
+      `╠════════════════════════════════════════════════════╣`,
+      `║  EXPERIENCE                                        ║`,
+      `║                                                    ║`,
+      ...DATA.experience.flatMap(e => [
+        `║  ▸ ${e.role.padEnd(46)}║`,
+        `║    ${e.company.padEnd(22)}${e.period.padEnd(24)}║`,
+        `║    ${e.desc.padEnd(46)}║`,
+        `║                                                    ║`,
+      ]),
+      `╠════════════════════════════════════════════════════╣`,
+      `║  EDUCATION                                         ║`,
+      `║                                                    ║`,
+      `║  ▸ ${DATA.education.degree.padEnd(46)}║`,
+      `║    ${DATA.education.school.padEnd(22)}${DATA.education.year.padEnd(24)}║`,
+      `║                                                    ║`,
+      `╠════════════════════════════════════════════════════╣`,
+      `║  SKILLS                                            ║`,
+      `║                                                    ║`,
+      ...Object.entries(DATA.skills).map(([k, v]) =>
+        `║  ${(k + ':').padEnd(12)}${v.join(', ').padEnd(38)}║`
+      ),
+      `║                                                    ║`,
+      `╚════════════════════════════════════════════════════╝`,
+    ]},
+  };
+
+  DATA.projects.forEach(p => {
+    FS[`~/projects/${p.name}/`] = { type: 'dir', children: ['README.md', 'src/', 'package.json'] };
+    FS[`~/projects/${p.name}/README.md`] = { type: 'file', content: () => [
+      `# ${p.name}`, '', p.desc, '',
+      `Tech: ${p.tech.join(', ')}`,
+      `Stars: ${'★'.repeat(Math.min(5, Math.floor(p.stars / 50)))} (${p.stars})`,
+      `URL: ${p.url}`,
+    ]};
+  });
+
+  DATA.experience.forEach((e, i) => {
+    const fname = `${i + 1}_${e.company.toLowerCase().replace(/\s+/g, '_')}.md`;
+    FS[`~/experience/${fname}`] = { type: 'file', content: () => [
+      `# ${e.role}`, `## ${e.company}  |  ${e.period}`, '', e.desc,
+    ]};
+  });
+
+  function resolvePath(input) {
+    if (!input) return currentPath;
+    if (input === '~' || input === '~/') return '~';
+    if (input.startsWith('~/')) return input.replace(/\/+$/, '') || '~';
+    if (input.startsWith('/')) return input;
+    let base = currentPath === '~' ? '~' : currentPath;
+    let parts = base.split('/');
+    for (const seg of input.split('/')) {
+      if (seg === '..') parts.pop();
+      else if (seg && seg !== '.') parts.push(seg);
+    }
+    return parts.join('/') || '~';
+  }
+
+  // ── Commands ──
+  const COMMANDS = {
+    help() {
+      addLine('');
+      addSectionBox('AVAILABLE COMMANDS', (body) => {
+        addBoxLine(body, '');
+        addBoxLine(body, '  <span class="nav-key">help</span>          <span class="nav-label">Show this help message</span>');
+        addBoxLine(body, '  <span class="nav-key">home</span>          <span class="nav-label">Return to home screen</span>');
+        addBoxLine(body, '  <span class="nav-key">about</span>         <span class="nav-label">Learn about me</span>');
+        addBoxLine(body, '  <span class="nav-key">work</span>          <span class="nav-label">View my projects</span>');
+        addBoxLine(body, '  <span class="nav-key">skills</span>        <span class="nav-label">View technical skills</span>');
+        addBoxLine(body, '  <span class="nav-key">fun</span>           <span class="nav-label">Fun facts</span>');
+        addBoxLine(body, '  <span class="nav-key">resume</span>        <span class="nav-label">View my resume</span>');
+        addBoxLine(body, '  <span class="nav-key">contact</span>       <span class="nav-label">Get in touch</span>');
+        addBoxLine(body, '');
+        addBoxLine(body, '  <span class="nav-key">ls</span> [path]     <span class="nav-label">List directory contents</span>');
+        addBoxLine(body, '  <span class="nav-key">cat</span> [file]    <span class="nav-label">Display file contents</span>');
+        addBoxLine(body, '  <span class="nav-key">cd</span> [dir]      <span class="nav-label">Change directory</span>');
+        addBoxLine(body, '  <span class="nav-key">pwd</span>           <span class="nav-label">Print working directory</span>');
+        addBoxLine(body, '  <span class="nav-key">whoami</span>        <span class="nav-label">Display current user</span>');
+        addBoxLine(body, '  <span class="nav-key">clear</span>         <span class="nav-label">Clear terminal</span>');
+        addBoxLine(body, '  <span class="nav-key">history</span>       <span class="nav-label">Command history</span>');
+        addBoxLine(body, '  <span class="nav-key">neofetch</span>      <span class="nav-label">System information</span>');
+        addBoxLine(body, '');
+        addBoxLine(body, '  <span style="color:var(--dim)">Navigation:  <span class="nav-key">[1]</span> home  <span class="nav-key">[2]</span> about  <span class="nav-key">[3]</span> work  <span class="nav-key">[4]</span> fun</span>');
+        addBoxLine(body, '');
+      });
+      addLine('');
+    },
+
+    async home() {
+      highlightsShown = false;
+      await showHomeScreen(false);
+    },
+
+    async about() {
+      addLine('');
+
+      const aboutAscii = [
+        ' █████╗ ██████╗  ██████╗ ██╗   ██╗████████╗',
+        '██╔══██╗██╔══██╗██╔═══██╗██║   ██║╚══██╔══╝',
+        '███████║██████╔╝██║   ██║██║   ██║   ██║',
+        '██╔══██║██╔══██╗██║   ██║██║   ██║   ██║',
+        '██║  ██║██████╔╝╚██████╔╝╚██████╔╝   ██║',
+        '╚═╝  ╚═╝╚═════╝  ╚═════╝  ╚═════╝    ╚═╝',
+      ];
+      const asciiEls = aboutAscii.map(l => addLine(l, 'ascii-art'));
+      asciiEls.forEach(el => { el.style.opacity = '0'; el.style.transition = 'opacity 500ms ease'; });
+      requestAnimationFrame(() => asciiEls.forEach(el => { el.style.opacity = '1'; }));
+      await sleep(600);
+
+      addLine('');
+      addLine('');
+
+      function addFadeGroup(lines) {
+        var els = lines.map(function(l) { var el = addLine(l); el.style.opacity = '0'; el.style.transition = 'opacity 400ms ease'; return el; });
+        requestAnimationFrame(function() { els.forEach(function(el) { el.style.opacity = '1'; }); });
+        return els;
+      }
+
+      addFadeGroup([
+        '<span style="color:var(--accent);font-weight:700;">&gt; Who am I?</span>',
+      ]);
+      await sleep(200);
+      addLine('');
+
+      addFadeGroup([
+        '<span style="color:#D9D9D9;font-weight:700;font-size:16px">seul, Lee</span>',
+        '<span style="color:var(--dim)">Product Designer</span>',
+        '<span style="color:var(--dim)">Seoul, South Korea</span>',
+        '<span style="color:var(--dim)">dew.eunsoo@gmail.com</span>',
+      ]);
+      await sleep(200);
+      addLine('');
+
+      addFadeGroup([
+        '<span style="color:#aaa">안녕하세요. 저는 사용자 흐름과 구조를 설계하는 프로덕트 디자이너 이슬입니다.</span>',
+        '<span style="color:#aaa">복잡한 정책과 기능을 이해하기 쉬운 경험으로 전환하는 일을 합니다.</span>',
+        '<span style="color:#aaa">AI를 도구로 삼아 더 효율적으로 일하고, 그 기술이 사용자에게 가치있는 경험으로</span>',
+        '<span style="color:#aaa">이어지는 방법에 깊은 관심을 가지고 있습니다.</span>',
+      ]);
+      await sleep(200);
+      addLine('');
+      addLine('');
+
+      addFadeGroup([
+        '<span style="color:var(--accent);font-weight:700;">&gt; Career</span>',
+      ]);
+      await sleep(200);
+      addLine('');
+
+      addFadeGroup([
+        '<span style="color:var(--accent)">●</span> <span style="color:#D9D9D9;font-weight:700;">람다256</span>  <span style="color:var(--dim)">2024.02 – 재직 중</span>',
+      ]);
+
+      var timelineLines = [
+        '<span style="color:#aaa">프로덕트 디자인팀 ㅣ 프로덕트 디자이너</span>',
+        '',
+        '<span style="color:var(--dim)">└</span> <span style="color:#aaa">원화 스테이블코인 기반 서비스 구축</span>',
+        '<span style="color:var(--dim)">└</span> <span style="color:#aaa">블록체인 Node 플랫폼 개편</span>',
+        '<span style="color:var(--dim)">└</span> <span style="color:#aaa">Datasquare AI Compatible 구축</span>',
+        '<span style="color:var(--dim)">└</span> <span style="color:#aaa">FLAP 물류 서비스 개편</span>',
+        '<span style="color:var(--dim)">└</span> <span style="color:#aaa">사내 운영 디자인 시스템 개편</span>',
+        '<span style="color:var(--dim)">└</span> <span style="color:#aaa">사내 AI 세미나 강의</span>',
+        '<span style="color:var(--dim)">└</span> <span style="color:#aaa">팀 AI 워크플로우 개선 리드</span>',
+        '',
+      ];
+      var tlEls = timelineLines.map(function(l) { var el = addLine(l, 'timeline-line'); el.style.opacity = '0'; el.style.transition = 'opacity 400ms ease'; return el; });
+      requestAnimationFrame(function() { tlEls.forEach(function(el) { el.style.opacity = '1'; }); });
+      await sleep(200);
+
+      addFadeGroup([
+        '<span style="color:var(--dim)">●</span> <span style="color:#D9D9D9;font-weight:700;">FNS(주)</span>  <span style="color:var(--dim)">2021.07 – 2023.11</span>',
+        '  <span style="color:#aaa">UXUI팀 ㅣ UXUI 디자이너</span>',
+        '',
+        '   <span style="color:var(--dim)">└</span> <span style="color:#aaa">글로벌 한류 플랫폼 소셜 커뮤니티 서비스 개편</span>',
+        '   <span style="color:var(--dim)">└</span> <span style="color:#aaa">한류홀딩스 기업사이트 구축</span>',
+        '   <span style="color:var(--dim)">└</span> <span style="color:#aaa">ERP 서비스페이지, 웹, 모바일 리뉴얼</span>',
+      ]);
+      await sleep(200);
+      addLine('');
+      addLine('');
+
+      addFadeGroup([
+        '<span style="color:var(--accent);font-weight:700;">&gt; Education</span>',
+      ]);
+      await sleep(200);
+      addLine('');
+
+      addFadeGroup([
+        '<span style="color:var(--dim)">●</span> <span style="color:#D9D9D9;font-weight:700;">백석대학교</span>  <span style="color:var(--dim)">2013.03 – 2017.02</span>',
+        '   <span style="color:#aaa">산업디자인과 졸업</span>',
+      ]);
+      await sleep(200);
+
+      addLine('');
+      addLine('');
+      addLine('');
+    },
+
+    async work() {
+      const workTop = addLine('');
+      setTimeout(function() { workTop.scrollIntoView({ block: 'start' }); }, 50);
+
+      const workAscii = [
+        '██╗    ██╗ ██████╗ ██████╗ ██╗  ██╗',
+        '██║    ██║██╔═══██╗██╔══██╗██║ ██╔╝',
+        '██║ █╗ ██║██║   ██║██████╔╝█████╔╝',
+        '██║███╗██║██║   ██║██╔══██╗██╔═██╗',
+        '╚███╔███╔╝╚██████╔╝██║  ██║██║  ██╗',
+        ' ╚══╝╚══╝  ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝',
+      ];
+      const asciiEls = workAscii.map(l => addLine(l, 'ascii-art'));
+      asciiEls.forEach(el => { el.style.opacity = '0'; el.style.transition = 'opacity 500ms ease'; });
+      requestAnimationFrame(() => asciiEls.forEach(el => { el.style.opacity = '1'; }));
+      await sleep(600);
+
+      addLine('');
+      addLine('');
+
+      function addFadeGroup(lines) {
+        var els = lines.map(function(l) { var el = addLine(l); el.style.opacity = '0'; el.style.transition = 'opacity 400ms ease'; return el; });
+        requestAnimationFrame(function() { els.forEach(function(el) { el.style.opacity = '1'; }); });
+        return els;
+      }
+
+      function addWorkTimeline(lines) {
+        var els = lines.map(function(l) { var el = addLine(l, 'timeline-line'); el.style.opacity = '0'; el.style.transition = 'opacity 400ms ease'; return el; });
+        requestAnimationFrame(function() { els.forEach(function(el) { el.style.opacity = '1'; }); });
+        return els;
+      }
+
+      addFadeGroup([
+        '<span style="color:var(--dim)">●</span> <span style="color:#D9D9D9;font-weight:700;">Nodit UX 구조 개선을 통한 활성 사용자 지표 성장</span>',
+      ]);
+      addWorkTimeline([
+        '<span style="color:var(--dim)">2025.01 – 2025.03</span>',
+        '<span style="color:var(--dim)">└</span> <span style="color:#aaa">UX 흐름 재설계 및 반복 사용 유도 구조 개선으로 <span style="color:var(--accent)">DAP +30%, MAP +16%</span> 성과 기여</span>',
+        '<span style="color:var(--dim)">└</span> <span style="color:#aaa">Billing, Console 등 핵심 기능 UX 품질 개선</span>',
+        '<span style="color:var(--dim)">└</span> <span style="color:#aaa">정보 과밀 및 기능 탐색 구조 문제 정의 후 사용자 여정 기반 IA 전면 재설계</span>',
+        '',
+      ]);
+      await sleep(200);
+
+      addFadeGroup([
+        '<span style="color:var(--dim)">●</span> <span style="color:#D9D9D9;font-weight:700;">Datasquare AI Compatible UX</span>',
+      ]);
+      addWorkTimeline([
+        '<span style="color:var(--dim)">2024.08 – 2025.01</span>',
+        '<span style="color:var(--dim)">└</span> <span style="color:#aaa">온체인 데이터 모델을 사용자 시나리오와 연결한 의미 중심 시각화 설계</span>',
+        '<span style="color:var(--dim)">└</span> <span style="color:#aaa">데이터 상태·지표 해석·인터랙션 구조 정의 및 AI 확장 가능한 UI 체계 구축</span>',
+        '<span style="color:var(--dim)">└</span> <span style="color:#aaa">UI–데이터 정합성 QA 및 개발 협업 조율을 통한 제품 오픈 완성도 향상</span>',
+        '',
+      ]);
+      await sleep(200);
+
+      addFadeGroup([
+        '<span style="color:var(--dim)">●</span> <span style="color:#D9D9D9;font-weight:700;">원화 스테이블코인 기반 서비스 PoC & 네이버페이 Wallet 초기 프로토타입</span>',
+      ]);
+      addWorkTimeline([
+        '<span style="color:var(--dim)">2025.04</span>',
+        '<span style="color:var(--dim)">└</span> <span style="color:#aaa">NKRW 기반 Wallet 서비스 PoC UX/UI 프로토타입 설계</span>',
+        '<span style="color:var(--dim)">└</span> <span style="color:#aaa">약 98% 수준의 프로토타입 커버리지 확보, 사용자 흐름 복잡도 약 40% 감소</span>',
+        '<span style="color:var(--dim)">└</span> <span style="color:#aaa">KYC, MPC, 자산 구조 등 복잡한 요구사항을 사용자 흐름으로 통합</span>',
+        '',
+      ]);
+      await sleep(200);
+
+      addFadeGroup([
+        '<span style="color:var(--dim)">●</span> <span style="color:#D9D9D9;font-weight:700;">Design System & UX Policy 개편</span>',
+      ]);
+      addWorkTimeline([
+        '<span style="color:var(--dim)">2024.03 – 2025.03</span>',
+        '<span style="color:var(--dim)">└</span> <span style="color:#aaa">Nodit Design System 개편 및 배포, 디자인 토큰 기반 재사용 자산 확장</span>',
+        '<span style="color:var(--dim)">└</span> <span style="color:#aaa">UX Writing 및 오류 정책 표준화</span>',
+        '<span style="color:var(--dim)">└</span> <span style="color:#aaa">Figma 페이지 구조 패턴화를 통한 협업 프로세스 구조화 및 품질 관리 체계 도입</span>',
+        '',
+      ]);
+      await sleep(200);
+
+      addFadeGroup([
+        '<span style="color:var(--dim)">●</span> <span style="color:#D9D9D9;font-weight:700;">글로벌 한류 플랫폼 소셜 커뮤니티 서비스 전면 개편</span>',
+      ]);
+      addWorkTimeline([
+        '<span style="color:var(--dim)">2022.04 – 2023.04</span>',
+        '<span style="color:var(--dim)">└</span> <span style="color:#aaa">디자인/기획/개발 통합 스쿼드 기반 2.0 전면 개편 프로젝트 참여</span>',
+        '<span style="color:var(--dim)">└</span> <span style="color:#aaa">브레인스토밍 및 사용자 리서치를 통해 핵심 인사이트 도출, 서비스 컨셉 및 방향성 재정의</span>',
+        '<span style="color:var(--dim)">└</span> <span style="color:#aaa">UX 설계 → UI 디자인 → 개발 협업까지 End-to-End 수행</span>',
+        '<span style="color:var(--dim)">└</span> <span style="color:#aaa">전면 개편 이후 가입자 수 <span style="color:var(--accent)">50만 → 200만 명 돌파 (약 4배 성장)</span></span>',
+        '',
+      ]);
+      await sleep(200);
+
+      addFadeGroup([
+        '<span style="color:var(--dim)">●</span> <span style="color:#D9D9D9;font-weight:700;">한류홀딩스 기업사이트 구축</span>',
+      ]);
+      addWorkTimeline([
+        '<span style="color:var(--dim)">2022.02 – 2022.03</span>',
+        '<span style="color:var(--dim)">└</span> <span style="color:#aaa">웹사이트 리뉴얼을 통해 투자자 대상 기업 가치 전달 구조 재정립</span>',
+        '<span style="color:var(--dim)">└</span> <span style="color:#aaa">기업 소개 플로우 및 정보 구조 개선으로 핵심 메시지 전달력 강화</span>',
+        '<span style="color:var(--dim)">└</span> <span style="color:#aaa">웹사이트를 투자 및 사업 확장의 접점으로 전환</span>',
+        '',
+      ]);
+      await sleep(200);
+
+      addFadeGroup([
+        '<span style="color:var(--dim)">●</span> <span style="color:#D9D9D9;font-weight:700;">ERP 서비스페이지, 웹, 모바일 리뉴얼</span>',
+      ]);
+      addFadeGroup([
+        '   <span style="color:var(--dim)">2021.09 – 2021.12</span>',
+        '   <span style="color:var(--dim)">└</span> <span style="color:#aaa">분산된 PC 보안 기능의 복잡한 관리 문제 정의</span>',
+        '   <span style="color:var(--dim)">└</span> <span style="color:#aaa">관리자 중심 업무 흐름을 모바일 환경에 최적화</span>',
+        '   <span style="color:var(--dim)">└</span> <span style="color:#aaa">기능 나열형 구조에서 업무 중심 플로우 기반 UX로 전환</span>',
+      ]);
+      await sleep(200);
+
+      addLine('');
+      addLine('');
+      addLine('');
+    },
+
+    skills() {
+      addLine('');
+      const icons = { languages: '⟩', frontend: '◧', backend: '⚙', devops: '☁', tools: '⌘' };
+      addSectionBox('TECHNICAL SKILLS', (body) => {
+        Object.entries(DATA.skills).forEach(([cat, items]) => {
+          addBoxLine(body, '');
+          addBoxLine(body, `  <span style="color:var(--yellow);font-weight:700">${icons[cat] || '▸'} ${cat.toUpperCase()}</span>`);
+          addBoxLine(body, `    ${items.map(s => `<span class="tag">${s}</span>`).join(' ')}`);
+        });
+        addBoxLine(body, '');
+      });
+      addLine('');
+    },
+
+    async project() {
+      cmdInput.placeholder = 'Enter를 눌러 계속하세요...';
+      addLine('');
+
+      // ASCII 아트 페이드인
+      const asciiEls = [
+        '██████╗ ██████╗  ██████╗      ██╗███████╗ ██████╗████████╗███████╗',
+        '██╔══██╗██╔══██╗██╔═══██╗     ██║██╔════╝██╔════╝╚══██╔══╝██╔════╝',
+        '██████╔╝██████╔╝██║   ██║     ██║█████╗  ██║        ██║   ███████╗',
+        '██╔═══╝ ██╔══██╗██║   ██║██   ██║██╔══╝  ██║        ██║   ╚════██║',
+        '██║     ██║  ██║╚██████╔╝╚█████╔╝███████╗╚██████╗   ██║   ███████║',
+        '╚═╝     ╚═╝  ╚═╝ ╚═════╝  ╚════╝ ╚══════╝ ╚═════╝   ╚═╝   ╚══════╝',
+      ].map(l => addLine(l, 'ascii-art'));
+      asciiEls.forEach(el => { el.style.opacity = '0'; el.style.transition = 'opacity 600ms ease'; });
+      await new Promise(r => requestAnimationFrame(() => { requestAnimationFrame(() => { asciiEls.forEach(el => { el.style.opacity = '1'; }); r(); }); }));
+      await sleep(700);
+
+      addLine('');
+
+      // 프로젝트 리스트 페이드인
+      const projects = ['Project1/ NAVER pay Wallet', 'Project2/ NODIT Node Platform', 'Project3/ AI Workflow'];
+      let selectedIdx = 0;
+      const listEls = projects.map((p, i) => {
+        return addLine('');
+      });
+
+      function renderList() {
+        listEls.forEach((el, i) => {
+          const arrow = i === selectedIdx ? '<svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align: -4px;"><path d="M6 6L12.6143 9.307C12.7666 9.38315 12.7601 9.60264 12.6036 9.66972L6 12.4998" stroke="#00D084" stroke-width="1.5" stroke-linecap="round"/></svg>' : '<span style="display:inline-block;width:18px;"></span>';
+          const color = i === selectedIdx ? '#00D084' : '#D9D9D9';
+          const parts = projects[i].split('/ ');
+          el.innerHTML = `${arrow} <span style="color:#5F5F5F">${parts[0]}/</span> <span style="color:${color}">${parts[1]}</span>`;
+        });
+      }
+
+      listEls.forEach(el => { el.style.opacity = '0'; el.style.transition = 'opacity 400ms ease'; });
+      renderList();
+      await new Promise(r => requestAnimationFrame(() => { requestAnimationFrame(() => { listEls.forEach(el => { el.style.opacity = '1'; }); r(); }); }));
+      await sleep(500);
+
+      addLine('');
+      const hintEl = addLine('<span style="color:#888888">[ ↑↓ 방향키로 선택, Enter로 확인 ]</span>');
+      await fadeIn(hintEl, 400);
+      addLine('');
+      const spacer = addLine('');
+      spacer.style.height = '34px';
+
+      // 프로젝트 선택 모드
+      let projectMode = true;
+      inProjectSelection = true;
+      async function projectKeyHandler(e) {
+        if (!projectMode) return;
+        if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          selectedIdx = (selectedIdx - 1 + projects.length) % projects.length;
+          renderList();
+        } else if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          selectedIdx = (selectedIdx + 1) % projects.length;
+          renderList();
+        } else if (e.key === 'Enter') {
+          var inputVal = cmdInput.value.trim();
+          var navCmds = ['1','2','3','4','home','about','work','project'];
+          if (inputVal && navCmds.includes(inputVal.toLowerCase())) {
+            // 네비게이션 명령은 글로벌 핸들러에서 처리
+            projectMode = false;
+            inProjectSelection = false;
+            cmdInput.removeEventListener('keydown', projectKeyHandler);
+            return;
+          }
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          projectMode = false;
+          inProjectSelection = false;
+          cmdInput.removeEventListener('keydown', projectKeyHandler);
+          const selected = projects[selectedIdx];
+          cmdInput.value = '';
+          await showProjectDetail(selected);
+        }
+      }
+      cmdInput.addEventListener('keydown', projectKeyHandler);
+    },
+  };
+
+  async function showProjectDetail(name) {
+    cmdInput.value = '';
+    cmdInput.placeholder = '[1] home    [2] about    [3] work    [4] project';
+    navPanel.classList.remove('show');
+    setTimeout(function() { navPanel.style.display = 'none'; }, 300);
+    if (name === 'Project1/ NAVER pay Wallet') {
+      // SCOPE-1
+      var s1Wrap = document.createElement('div');
+      s1Wrap.style.cssText = 'margin-left:-84px; margin-right:-84px;';
+
+      var s1Srcs = [
+        'images/naverpay/SCOPE-1-1.png',
+        'images/naverpay/SCOPE-1-2.svg',
+        'images/naverpay/SCOPE-1-3.png',
+        'images/naverpay/SCOPE-1-4.svg'
+      ];
+      var s1Imgs = s1Srcs.map(function(src) {
+        var img = document.createElement('img');
+        img.src = src;
+        img.style.cssText = 'width:100%; display:block; opacity:0;';
+        s1Wrap.appendChild(img);
+        return img;
+      });
+      var s1Img = s1Imgs[0];
+      output.appendChild(s1Wrap);
+
+      // App Slider
+      var sl = document.createElement('div');
+      sl.className = 'app-slider';
+      sl.innerHTML = '<div class="app-slider-nav"></div><div class="app-slider-screen"></div>';
+      output.appendChild(sl);
+
+      var slData = [
+        ['01','Wallet Home','images/naverpay/Wallet Home.png'],
+        ['02','Stablecoin Top Up','images/naverpay/Stablecoin Top Up.png'],
+        ['03','After Stablecoin Purchase','images/naverpay/After Stablecoin Purchase.png'],
+        ['04','Send Stablecoin','images/naverpay/Send Stablecoin.png'],
+        ['05','Proceed to Payment','images/naverpay/Proceed to Payment.png']
+      ];
+      var slNav = sl.querySelector('.app-slider-nav');
+      var slScr = sl.querySelector('.app-slider-screen');
+      var slCur = 0;
+      var slTimer = null;
+
+      slData.forEach(function(d, idx) {
+        var btn = document.createElement('span');
+        btn.innerHTML = '<i>' + d[0] + '</i>' + d[1];
+        if (idx === 0) btn.className = 'on';
+        btn.onclick = function() { slGo(idx); };
+        slNav.appendChild(btn);
+
+        var pic = document.createElement('img');
+        pic.src = d[2];
+        pic.width = 280;
+        pic.height = 607;
+        pic.style.cssText = 'width:280px !important;height:607px !important;object-fit:cover;border-radius:28px;position:absolute;opacity:0;transition:opacity 0.6s ease;';
+        if (idx === 0) pic.className = 'on';
+        slScr.appendChild(pic);
+      });
+
+      function slGo(n) {
+        if (n === slCur) return;
+        slNav.children[slCur].className = '';
+        slScr.children[slCur].className = '';
+        slCur = n;
+        slNav.children[slCur].className = 'on';
+        slScr.children[slCur].className = 'on';
+        clearInterval(slTimer);
+        slTimer = setInterval(slNext, 3000);
+      }
+      function slNext() { slGo((slCur + 1) % 5); }
+      setTimeout(function() { slTimer = setInterval(slNext, 3000); }, 3000);
+
+      // SCOPE-3
+      var s3Wrap = document.createElement('div');
+      s3Wrap.style.cssText = 'margin-left:-84px; margin-right:-84px;';
+      var s3Img = document.createElement('img');
+      s3Img.src = 'images/naverpay/SCOPE-3.svg';
+      s3Img.style.cssText = 'width:100%; display:block; opacity:0;';
+      s3Wrap.appendChild(s3Img);
+      output.appendChild(s3Wrap);
+
+      // SCOPE-4 (dual phone on background)
+      var s4 = document.createElement('div');
+      s4.className = 'scope4-section';
+      s4.style.cssText = 'margin-left:-84px;margin-right:-84px;width:auto;opacity:0;';
+      var ph1 = document.createElement('div');
+      ph1.className = 'scope4-phone';
+      var ph1Slider = document.createElement('div');
+      ph1Slider.className = 'scope4-phone-slider';
+      var posFlows2 = ['images/naverpay/pos_flow_1.png','images/naverpay/pos_flow_2.png','images/naverpay/pos_flow_3.png','images/naverpay/pos_flow_4.png','images/naverpay/pos_flow_5.png'];
+      var posImgs2 = posFlows2.map(function(src, i) {
+        var img = document.createElement('img');
+        img.src = src;
+        if (i === 0) img.className = 'on';
+        ph1Slider.appendChild(img);
+        return img;
+      });
+      ph1.appendChild(ph1Slider);
+      var posCur2 = 0;
+      setTimeout(function() {
+        function posNext2() {
+          posImgs2[posCur2].className = '';
+          posCur2 = (posCur2 + 1) % posImgs2.length;
+          posImgs2[posCur2].className = 'on';
+        }
+        posNext2();
+        setInterval(posNext2, 3000);
+      }, 3000);
+
+      var ph2 = document.createElement('div');
+      ph2.className = 'scope4-phone';
+      var ph2Slider2 = document.createElement('div');
+      ph2Slider2.className = 'scope4-phone-slider';
+      var sendFlows2 = ['images/naverpay/send_flow_1.png','images/naverpay/send_flow_2.png','images/naverpay/send_flow_3.png','images/naverpay/send_flow_4.png','images/naverpay/send_flow_5.png'];
+      var sendImgs2 = sendFlows2.map(function(src, i) {
+        var img = document.createElement('img');
+        img.src = src;
+        if (i === 0) img.className = 'on';
+        ph2Slider2.appendChild(img);
+        return img;
+      });
+      ph2.appendChild(ph2Slider2);
+      var sendCur2 = 0;
+      setTimeout(function() {
+        function sendNext2() {
+          sendImgs2[sendCur2].className = '';
+          sendCur2 = (sendCur2 + 1) % sendImgs2.length;
+          sendImgs2[sendCur2].className = 'on';
+        }
+        sendNext2();
+        setInterval(sendNext2, 3000);
+      }, 4500);
+
+      s4.appendChild(ph1);
+      s4.appendChild(ph2);
+      output.appendChild(s4);
+
+      // Thanks for watching
+      var thanksEl = document.createElement('div');
+      thanksEl.className = 'thanks-section';
+      thanksEl.style.cssText = 'margin-left:-84px;margin-right:-84px;width:auto;';
+      var thanksInner = document.createElement('div');
+      thanksInner.className = 'thanks-text';
+
+      // "Thanks for watching■" 구성
+      var forWrap = document.createElement('span');
+      forWrap.className = 't-for-wrap';
+
+      var fullStr = 'Thanks for watching';
+      var allChars = [];
+      var forStart = 7;
+      var forEnd = 10;
+
+      for (var ci = 0; ci < fullStr.length; ci++) {
+        var sp = document.createElement('span');
+        sp.className = 't-char';
+        sp.textContent = fullStr[ci];
+        if (ci >= forStart && ci < forEnd) {
+          forWrap.appendChild(sp);
+          if (ci === forStart) thanksInner.appendChild(forWrap);
+        } else {
+          thanksInner.appendChild(sp);
+        }
+        allChars.push(sp);
+      }
+
+      // 커서
+      var cur = document.createElement('span');
+      cur.className = 'thanks-cursor';
+      cur.style.display = 'none';
+
+      // 마지막 네모 점
+      var dot = document.createElement('span');
+      dot.className = 't-char thanks-dot';
+      thanksInner.appendChild(cur);
+      thanksInner.appendChild(dot);
+      allChars.push(dot);
+
+      thanksEl.appendChild(thanksInner);
+      output.appendChild(thanksEl);
+
+      function runThanksAnim() {
+        // 초기화
+        allChars.forEach(function(ch) { ch.classList.remove('show'); });
+        forWrap.classList.remove('selected', 'mono');
+        thanksInner.classList.remove('all-selected');
+        cur.style.display = 'none';
+
+        // Step 1: 한 글자씩 타이핑 + 커서 글자 뒤에
+        var typeDelay = 160;
+        cur.style.display = 'inline-block';
+
+        allChars.forEach(function(ch, i) {
+          setTimeout(function() {
+            ch.classList.add('show');
+            // 커서를 현재 글자 바로 뒤에 삽입
+            var parent = ch.parentNode;
+            if (ch.nextSibling) {
+              parent.insertBefore(cur, ch.nextSibling);
+            } else {
+              parent.appendChild(cur);
+            }
+            // forWrap 안이면 forWrap 뒤로 이동
+            if (parent === forWrap && !ch.nextSibling) {
+              forWrap.parentNode.insertBefore(cur, forWrap.nextSibling);
+            }
+          }, i * typeDelay);
+        });
+
+        var totalType = allChars.length * typeDelay;
+
+        // Step 2: 대기 → 커서 숨기고 'for' 드래그
+        setTimeout(function() {
+          cur.style.display = 'none';
+          forWrap.classList.add('selected');
+        }, totalType + 1200);
+
+        // Step 3: 'for' JetBrains Mono 이탤릭으로 변환
+        setTimeout(function() {
+          forWrap.classList.add('mono');
+        }, totalType + 2200);
+
+        // Step 4: for 선택 해제
+        setTimeout(function() {
+          forWrap.classList.remove('selected');
+        }, totalType + 3200);
+
+        // Step 5: 전체 드래그 선택
+        setTimeout(function() {
+          thanksInner.classList.add('all-selected');
+        }, totalType + 4200);
+
+        // Step 6: 전체 선택 해제
+        setTimeout(function() {
+          thanksInner.classList.remove('all-selected');
+        }, totalType + 6200);
+
+        // 무한 반복
+        setTimeout(runThanksAnim, totalType + 7500);
+      }
+
+      var thanksRevealed = false;
+      var thanksObs = new IntersectionObserver(function(entries) {
+        if (entries[0].isIntersecting && !thanksRevealed) {
+          thanksRevealed = true;
+          thanksObs.disconnect();
+          runThanksAnim();
+        }
+      }, { threshold: 0.3 });
+      thanksObs.observe(thanksEl);
+
+      // 첫 이미지 로드 대기 후 페이드인
+      await new Promise(function(r) { if (s1Img.complete) r(); else s1Img.onload = r; });
+      terminal.scrollTop = s1Wrap.offsetTop - terminal.offsetTop;
+      requestAnimationFrame(function() { requestAnimationFrame(function() {
+        s1Imgs.forEach(function(img) {
+          img.style.transition = 'opacity 0.5s ease';
+          img.style.opacity = '1';
+        });
+        s3Img.style.transition = 'opacity 0.5s ease';
+        s3Img.style.opacity = '1';
+        s4.style.transition = 'opacity 0.5s ease';
+        s4.style.opacity = '1';
+      }); });
+    } else if (name === 'Project2/ NODIT Node Platform') {
+      var n1Wrap = document.createElement('div');
+      n1Wrap.style.cssText = 'margin-left:-84px; margin-right:-84px;';
+
+      var n1Srcs = [
+        'images/nodit/Nodit-1-1.png',
+        'images/nodit/Nodit-1-2.svg',
+        'images/nodit/Nodit-1-3.png',
+        'images/nodit/Nodit-1-4.svg'
+      ];
+      var n1Imgs = n1Srcs.map(function(src) {
+        var img = document.createElement('img');
+        img.src = src;
+        img.style.cssText = 'width:100%; display:block; opacity:0; transform:translateY(12px);';
+        n1Wrap.appendChild(img);
+        return img;
+      });
+      var n1Img = n1Imgs[0];
+      output.appendChild(n1Wrap);
+
+      // Nodit-2 배경 + 개선전/개선 오버레이
+      var n2Wrap = document.createElement('div');
+      n2Wrap.style.cssText = 'margin-left:-84px; margin-right:-84px; position:relative; opacity:0; transform:translateY(12px);';
+      var n2Img = document.createElement('img');
+      n2Img.src = 'images/nodit/Nodit-2.svg';
+      n2Img.style.cssText = 'width:100%; display:block;';
+      n2Wrap.appendChild(n2Img);
+
+      // 개선전/개선 이미지를 Nodit-2 위에 오버레이
+      var baContainer = document.createElement('div');
+      baContainer.style.cssText = 'position:absolute; top:50%; left:50%; width:46%; transform:translate(-50%,-50%); border-radius:24px; border:4px solid #282828; padding:14px; box-sizing:border-box; box-shadow:0 20px 60px rgba(0,0,0,0.5); background:#181818;';
+
+      var baInner = document.createElement('div');
+      baInner.style.cssText = 'position:relative; width:100%; aspect-ratio:5760/5091; overflow:hidden; border-radius:8px; box-shadow:inset 0 0 0 0.5px #000000;';
+
+      var baBefore = document.createElement('img');
+      baBefore.src = 'images/nodit/개선전-overview-1.svg';
+      baBefore.style.cssText = 'position:absolute; top:-1px; left:-1px; width:calc(100% + 2px); height:calc(100% + 2px); object-fit:cover; backface-visibility:hidden; border:none;';
+
+      var baAfter = document.createElement('img');
+      baAfter.src = 'images/nodit/개선-overview-1.svg';
+      baAfter.style.cssText = 'position:absolute; top:-1px; left:-1px; width:calc(100% + 2px); height:calc(100% + 2px); object-fit:cover; opacity:0; transition:opacity 1s ease; will-change:opacity; backface-visibility:hidden; border:none;';
+
+      var baLabel = document.createElement('div');
+      baLabel.style.cssText = 'position:absolute; top:50%; left:calc(27% - 120px); transform:translateY(calc(-50% - 18px)); font-family:Pretendard,sans-serif; font-size:18px; font-weight:400; color:#7F7F7F; white-space:nowrap; z-index:2;';
+      baLabel.textContent = 'Before';
+
+      baInner.appendChild(baBefore);
+      baInner.appendChild(baAfter);
+      baContainer.appendChild(baInner);
+      n2Wrap.appendChild(baContainer);
+      n2Wrap.appendChild(baLabel);
+      output.appendChild(n2Wrap);
+
+      var n3Wrap = document.createElement('div');
+      n3Wrap.style.cssText = 'margin-left:-84px; margin-right:-84px;';
+      var n3Img = document.createElement('img');
+      n3Img.src = 'images/nodit/Nodit-3.png';
+      n3Img.style.cssText = 'width:100%; display:block;';
+      n3Wrap.appendChild(n3Img);
+      output.appendChild(n3Wrap);
+
+      var n4Wrap = document.createElement('div');
+      n4Wrap.style.cssText = 'margin-left:-84px; margin-right:-84px; position:relative; overflow:hidden;';
+
+      var n4Canvas = document.createElement('canvas');
+      n4Canvas.style.cssText = 'position:absolute; top:0; left:0; width:100%; height:100%; z-index:0;';
+      n4Wrap.appendChild(n4Canvas);
+
+      var n4Img = document.createElement('img');
+      n4Img.src = 'images/nodit/Nodit-4.svg';
+      n4Img.style.cssText = 'width:100%; display:block; position:relative; z-index:1; mix-blend-mode:lighten;';
+      n4Wrap.appendChild(n4Img);
+
+      // 모바일 스크린 오버레이
+      var mobileScreens = [
+        { src: 'images/nodit/mobile/menu_01_4.png', top: 'calc(10% + 50px)', right: 'calc(4% + 100px)' },
+        { src: 'images/nodit/mobile/overview_elastic_01_2(Scroll).png', top: 'calc(40% + 50px)', right: 'calc(8% + 150px)' },
+        { src: 'images/nodit/mobile/project menu_01_1.png', top: 'calc(70% + 50px)', right: '4%' }
+      ];
+      var mobileEls = mobileScreens.map(function(m, idx) {
+        var img = document.createElement('img');
+        img.src = m.src;
+        var borderStyle = idx === 0 ? 'border:1px solid #272727;' : '';
+        img.style.cssText = 'position:absolute; top:' + m.top + '; right:' + m.right + '; width:180px; height:390px; object-fit:cover; z-index:2; border-radius:12px; box-shadow:0 8px 40px rgba(0,0,0,0.6); opacity:0; transform:translateY(40px); transition:opacity 0.8s ease, transform 0.8s ease;' + borderStyle;
+        n4Wrap.appendChild(img);
+        return img;
+      });
+
+      output.appendChild(n4Wrap);
+
+      // 스크롤 애니메이션 - 각 모바일 이미지가 뷰포트에 들어오면 페이드인
+      var mobileObserver = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+          if (entry.isIntersecting) {
+            entry.target.style.opacity = '1';
+            entry.target.style.transform = 'translateY(0)';
+            mobileObserver.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.2, root: terminal });
+
+      mobileEls.forEach(function(el) {
+        mobileObserver.observe(el);
+      });
+
+      // 밤하늘 별 애니메이션 - 이미지 로드 후 시작
+      n4Img.onload = function() {
+        var ctx = n4Canvas.getContext('2d');
+        var stars = [];
+        var starCount = 150;
+        var cx, cy;
+
+        function resizeCanvas() {
+          n4Canvas.width = n4Img.offsetWidth;
+          n4Canvas.height = n4Img.offsetHeight;
+          cx = n4Canvas.width / 2;
+          cy = n4Canvas.height / 2;
+        }
+
+        function spawnStar() {
+          var angle = Math.random() * Math.PI * 2;
+          var dist = Math.random() * 30 + 5;
+          return {
+            x: cx + Math.cos(angle) * dist,
+            y: cy + Math.sin(angle) * dist,
+            angle: angle,
+            dist: dist,
+            speed: Math.random() * 0.3 + 0.15,
+            maxR: Math.random() * 1 + 0.2,
+            brightness: Math.random() * 0.6 + 0.3
+          };
+        }
+
+        function initStars() {
+          stars = [];
+          for (var i = 0; i < starCount; i++) {
+            var s = spawnStar();
+            s.dist = Math.random() * Math.max(cx, cy);
+            s.x = cx + Math.cos(s.angle) * s.dist;
+            s.y = cy + Math.sin(s.angle) * s.dist;
+            stars.push(s);
+          }
+        }
+
+        function draw() {
+          ctx.clearRect(0, 0, n4Canvas.width, n4Canvas.height);
+          ctx.fillStyle = '#000';
+          ctx.fillRect(0, 0, n4Canvas.width, n4Canvas.height);
+
+          var maxDist = Math.sqrt(cx * cx + cy * cy);
+
+          for (var i = 0; i < stars.length; i++) {
+            var s = stars[i];
+            s.dist += s.speed;
+            s.x = cx + Math.cos(s.angle) * s.dist;
+            s.y = cy + Math.sin(s.angle) * s.dist;
+
+            var progress = Math.min(s.dist / maxDist, 1);
+            var r = s.maxR * (0.2 + progress * 2.5);
+            var alpha = s.brightness * (0.1 + progress * 0.9);
+
+            // 화면 밖으로 나가면 다시 중심에서 생성
+            if (s.x < -20 || s.x > n4Canvas.width + 20 || s.y < -20 || s.y > n4Canvas.height + 20) {
+              stars[i] = spawnStar();
+              continue;
+            }
+
+            // 글로우
+            if (r > 1.5) {
+              var glowR = r * 4;
+              var grad = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, glowR);
+              grad.addColorStop(0, 'rgba(255,255,255,' + (alpha * 0.3) + ')');
+              grad.addColorStop(1, 'rgba(255,255,255,0)');
+              ctx.fillStyle = grad;
+              ctx.beginPath();
+              ctx.arc(s.x, s.y, glowR, 0, Math.PI * 2);
+              ctx.fill();
+            }
+
+            // 코어
+            ctx.beginPath();
+            ctx.arc(s.x, s.y, r, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(255,255,255,' + alpha + ')';
+            ctx.fill();
+          }
+          requestAnimationFrame(draw);
+        }
+
+        resizeCanvas();
+        initStars();
+        requestAnimationFrame(draw);
+
+        window.addEventListener('resize', function() {
+          resizeCanvas();
+          initStars();
+        });
+      };
+
+      var baShowAfter = false;
+      setInterval(function() {
+        baShowAfter = !baShowAfter;
+        baAfter.style.opacity = baShowAfter ? '1' : '0';
+        baLabel.textContent = baShowAfter ? 'After' : 'Before';
+      }, 3000);
+
+      // Thanks for watching (Nodit)
+      var noditThanksEl = document.createElement('div');
+      noditThanksEl.className = 'thanks-section';
+      noditThanksEl.style.cssText = 'margin-left:-84px;margin-right:-84px;width:auto;';
+      var noditThanksInner = document.createElement('div');
+      noditThanksInner.className = 'thanks-text';
+
+      var noditForWrap = document.createElement('span');
+      noditForWrap.className = 't-for-wrap';
+
+      var noditFullStr = 'Thanks for watching';
+      var noditAllChars = [];
+      var noditForStart = 7;
+      var noditForEnd = 10;
+
+      for (var nci = 0; nci < noditFullStr.length; nci++) {
+        var nsp = document.createElement('span');
+        nsp.className = 't-char';
+        nsp.textContent = noditFullStr[nci];
+        if (nci >= noditForStart && nci < noditForEnd) {
+          noditForWrap.appendChild(nsp);
+          if (nci === noditForStart) noditThanksInner.appendChild(noditForWrap);
+        } else {
+          noditThanksInner.appendChild(nsp);
+        }
+        noditAllChars.push(nsp);
+      }
+
+      var noditCur = document.createElement('span');
+      noditCur.className = 'thanks-cursor';
+      noditCur.style.display = 'none';
+
+      var noditDot = document.createElement('span');
+      noditDot.className = 't-char thanks-dot';
+      noditThanksInner.appendChild(noditCur);
+      noditThanksInner.appendChild(noditDot);
+      noditAllChars.push(noditDot);
+
+      noditThanksEl.appendChild(noditThanksInner);
+      output.appendChild(noditThanksEl);
+
+      function runNoditThanksAnim() {
+        noditAllChars.forEach(function(ch) { ch.classList.remove('show'); });
+        noditForWrap.classList.remove('selected', 'mono');
+        noditThanksInner.classList.remove('all-selected');
+        noditCur.style.display = 'none';
+
+        var typeDelay = 160;
+        noditCur.style.display = 'inline-block';
+
+        noditAllChars.forEach(function(ch, i) {
+          setTimeout(function() {
+            ch.classList.add('show');
+            var parent = ch.parentNode;
+            if (ch.nextSibling) {
+              parent.insertBefore(noditCur, ch.nextSibling);
+            } else {
+              parent.appendChild(noditCur);
+            }
+            if (parent === noditForWrap && !ch.nextSibling) {
+              noditForWrap.parentNode.insertBefore(noditCur, noditForWrap.nextSibling);
+            }
+          }, i * typeDelay);
+        });
+
+        var totalType = noditAllChars.length * typeDelay;
+
+        setTimeout(function() {
+          noditCur.style.display = 'none';
+          noditForWrap.classList.add('selected');
+        }, totalType + 1200);
+
+        setTimeout(function() {
+          noditForWrap.classList.add('mono');
+        }, totalType + 2200);
+
+        setTimeout(function() {
+          noditForWrap.classList.remove('selected');
+        }, totalType + 3200);
+
+        setTimeout(function() {
+          noditThanksInner.classList.add('all-selected');
+        }, totalType + 4200);
+
+        setTimeout(function() {
+          noditThanksInner.classList.remove('all-selected');
+        }, totalType + 6200);
+
+        setTimeout(runNoditThanksAnim, totalType + 7500);
+      }
+
+      var noditThanksRevealed = false;
+      var noditThanksObs = new IntersectionObserver(function(entries) {
+        if (entries[0].isIntersecting && !noditThanksRevealed) {
+          noditThanksRevealed = true;
+          noditThanksObs.disconnect();
+          runNoditThanksAnim();
+        }
+      }, { threshold: 0.3 });
+      noditThanksObs.observe(noditThanksEl);
+
+      await new Promise(function(r) { if (n1Img.complete) r(); else n1Img.onload = r; });
+      terminal.scrollTop = n1Wrap.offsetTop - terminal.offsetTop;
+      requestAnimationFrame(function() { requestAnimationFrame(function() {
+        n1Imgs.forEach(function(img) {
+          img.style.transition = 'opacity 1s ease, transform 1s ease';
+          img.style.opacity = '1';
+          img.style.transform = 'translateY(0)';
+        });
+        n2Wrap.style.transition = 'opacity 1s ease, transform 1s ease';
+        n2Wrap.style.opacity = '1';
+        n2Wrap.style.transform = 'translateY(0)';
+      }); });
+    } else if (name === 'Project3/ AI Workflow') {
+      var ai1Wrap = document.createElement('div');
+      ai1Wrap.style.cssText = 'margin-left:-84px; margin-right:-84px; position:relative; overflow:hidden;';
+
+      var ai1Img = document.createElement('img');
+      ai1Img.src = 'images/ai/AI-1.svg';
+      ai1Img.style.cssText = 'width:100%; display:block; opacity:0; transform:translateY(12px);';
+      ai1Wrap.appendChild(ai1Img);
+
+      // 플로팅 키프레임 추가
+      var aiFloatStyle = document.createElement('style');
+      aiFloatStyle.textContent = '@keyframes aiFloat1{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}@keyframes aiFloat2{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}@keyframes aiFloat3{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}@keyframes aiFloat4{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}@keyframes aiBlink{0%,100%{opacity:1}50%{opacity:0}}';
+      document.head.appendChild(aiFloatStyle);
+
+      // 에셋 배치
+      var aiAssets = [
+        { src:'images/ai/2.svg', top:'calc(13% + 14px)', left:'calc(65% + 50px)', w:'60px', delay:0.3, anim:'aiFloat1 3s ease-in-out infinite', cursor:true, cursorLeft:'-10px' },
+        { src:'images/ai/1.svg', top:'calc(45% + 108px)', left:'calc(13% + 10px)', w:'107px', delay:0.5, anim:'aiFloat2 3.5s ease-in-out infinite', cursor:true, cursorLeft:'-10px' },
+        { src:'images/ai/pointing.svg', top:'calc(53% + 70px)', left:'calc(50% - 4px)', w:'40px', delay:0.7, anim:'aiFloat3 4s ease-in-out infinite', cursor:false, centerX:true },
+        { src:'images/ai/Union.svg', top:'calc(68% + 28px)', left:'calc(63% + 48px)', w:'50px', delay:0.9, anim:'aiFloat4 3.8s ease-in-out infinite', cursor:false }
+      ];
+
+      var aiAssetEls = [];
+      aiAssets.forEach(function(a) {
+        var container = document.createElement('div');
+        container.style.cssText = 'position:absolute; top:' + a.top + '; left:' + a.left + '; z-index:2; opacity:0; transition:opacity 0.8s ease ' + a.delay + 's; animation:' + a.anim + '; display:flex; align-items:center;' + (a.centerX ? ' transform:translateX(-50%);' : '');
+
+        if (a.cursor) {
+          var cur = document.createElement('span');
+          cur.style.cssText = 'display:inline-block; width:1px; height:18px; background:#fff; margin-right:6px; animation:aiBlink 1s step-end infinite;';
+          container.appendChild(cur);
+        }
+
+        var img = document.createElement('img');
+        img.src = a.src;
+        img.style.cssText = 'width:' + a.w + '; display:block;';
+        container.appendChild(img);
+        ai1Wrap.appendChild(container);
+        aiAssetEls.push(container);
+      });
+
+      output.appendChild(ai1Wrap);
+
+      var ai2Wrap = document.createElement('div');
+      ai2Wrap.style.cssText = 'margin-left:-84px; margin-right:-84px;';
+      var ai2Img = document.createElement('img');
+      ai2Img.src = 'images/ai/AI-2.svg';
+      ai2Img.style.cssText = 'width:100%; display:block; opacity:0; transform:translateY(12px);';
+      ai2Wrap.appendChild(ai2Img);
+      output.appendChild(ai2Wrap);
+
+      var ai3Wrap = document.createElement('div');
+      ai3Wrap.style.cssText = 'margin-left:-84px; margin-right:-84px; position:relative; overflow:hidden;';
+
+      var ai3Canvas = document.createElement('canvas');
+      ai3Canvas.style.cssText = 'position:absolute; top:0; left:0; width:100%; height:100%; z-index:0;';
+      ai3Wrap.appendChild(ai3Canvas);
+
+      var ai3Img = document.createElement('img');
+      ai3Img.src = 'images/ai/AI-3.svg';
+      ai3Img.style.cssText = 'width:100%; display:block; opacity:0; transform:translateY(12px); position:relative; z-index:1; mix-blend-mode:lighten;';
+      ai3Wrap.appendChild(ai3Img);
+      output.appendChild(ai3Wrap);
+
+      var ai4Wrap = document.createElement('div');
+      ai4Wrap.style.cssText = 'margin-left:-84px; margin-right:-84px;';
+      var ai4Img = document.createElement('img');
+      ai4Img.src = 'images/ai/AI-4.svg';
+      ai4Img.style.cssText = 'width:100%; display:block; opacity:0; transform:translateY(12px);';
+      ai4Wrap.appendChild(ai4Img);
+      output.appendChild(ai4Wrap);
+
+      var ai5Wrap = document.createElement('div');
+      ai5Wrap.style.cssText = 'margin-left:-84px; margin-right:-84px;';
+      var ai5Img = document.createElement('img');
+      ai5Img.src = 'images/ai/AI-5.svg';
+      ai5Img.style.cssText = 'width:100%; display:block; opacity:0; transform:translateY(12px);';
+      ai5Wrap.appendChild(ai5Img);
+      output.appendChild(ai5Wrap);
+
+      var ai6Wrap = document.createElement('div');
+      ai6Wrap.style.cssText = 'margin-left:-84px; margin-right:-84px; position:relative; overflow:hidden;';
+      var ai6Img = document.createElement('img');
+      ai6Img.src = 'images/ai/AI-6.svg';
+      ai6Img.style.cssText = 'width:100%; display:block; opacity:0; transform:translateY(12px); position:relative; z-index:0;';
+      ai6Wrap.appendChild(ai6Img);
+
+      // AI-6 에셋 배치
+      var ai6Assets = [
+        { src:'images/ai/1-1.svg', top:'48%', left:'24%', w:'89px', delay:1.7, anim:'aiFloat2 3.5s ease-in-out infinite', cursor:true },
+        { src:'images/ai/2-1.svg', top:'calc(8% + 300px)', left:'calc(28% + 300px)', w:'65px', delay:1.9, anim:'aiFloat1 3s ease-in-out infinite', cursor:true }
+      ];
+      var ai6AssetEls = [];
+      ai6Assets.forEach(function(a) {
+        var container = document.createElement('div');
+        container.style.cssText = 'position:absolute; top:' + a.top + '; left:' + a.left + '; z-index:2; opacity:0; transition:opacity 0.8s ease ' + a.delay + 's; animation:' + a.anim + '; display:flex; align-items:center;';
+        if (a.cursor) {
+          var cur = document.createElement('span');
+          cur.style.cssText = 'display:inline-block; width:1px; height:18px; background:#fff; margin-right:6px; animation:aiBlink 1s step-end infinite;';
+          container.appendChild(cur);
+        }
+        var img = document.createElement('img');
+        img.src = a.src;
+        img.style.cssText = 'width:' + a.w + '; display:block;';
+        container.appendChild(img);
+        ai6Wrap.appendChild(container);
+        ai6AssetEls.push(container);
+      });
+
+      output.appendChild(ai6Wrap);
+
+      // Thanks for watching (AI)
+      var aiThanksEl = document.createElement('div');
+      aiThanksEl.className = 'thanks-section';
+      aiThanksEl.style.cssText = 'margin-left:-84px;margin-right:-84px;width:auto;';
+      var aiThanksInner = document.createElement('div');
+      aiThanksInner.className = 'thanks-text';
+
+      var aiForWrap = document.createElement('span');
+      aiForWrap.className = 't-for-wrap';
+
+      var aiFullStr = 'Thanks for watching';
+      var aiAllChars = [];
+      var aiForStart = 7;
+      var aiForEnd = 10;
+
+      for (var aci = 0; aci < aiFullStr.length; aci++) {
+        var asp = document.createElement('span');
+        asp.className = 't-char';
+        asp.textContent = aiFullStr[aci];
+        if (aci >= aiForStart && aci < aiForEnd) {
+          aiForWrap.appendChild(asp);
+          if (aci === aiForStart) aiThanksInner.appendChild(aiForWrap);
+        } else {
+          aiThanksInner.appendChild(asp);
+        }
+        aiAllChars.push(asp);
+      }
+
+      var aiCur = document.createElement('span');
+      aiCur.className = 'thanks-cursor';
+      aiCur.style.display = 'none';
+
+      var aiDot = document.createElement('span');
+      aiDot.className = 't-char thanks-dot';
+      aiThanksInner.appendChild(aiCur);
+      aiThanksInner.appendChild(aiDot);
+      aiAllChars.push(aiDot);
+
+      aiThanksEl.appendChild(aiThanksInner);
+      output.appendChild(aiThanksEl);
+
+      function runAiThanksAnim() {
+        aiAllChars.forEach(function(ch) { ch.classList.remove('show'); });
+        aiForWrap.classList.remove('selected', 'mono');
+        aiThanksInner.classList.remove('all-selected');
+        aiCur.style.display = 'none';
+
+        var typeDelay = 160;
+        aiCur.style.display = 'inline-block';
+
+        aiAllChars.forEach(function(ch, i) {
+          setTimeout(function() {
+            ch.classList.add('show');
+            var parent = ch.parentNode;
+            if (ch.nextSibling) {
+              parent.insertBefore(aiCur, ch.nextSibling);
+            } else {
+              parent.appendChild(aiCur);
+            }
+            if (parent === aiForWrap && !ch.nextSibling) {
+              aiForWrap.parentNode.insertBefore(aiCur, aiForWrap.nextSibling);
+            }
+          }, i * typeDelay);
+        });
+
+        var totalType = aiAllChars.length * typeDelay;
+
+        setTimeout(function() {
+          aiCur.style.display = 'none';
+          aiForWrap.classList.add('selected');
+        }, totalType + 1200);
+
+        setTimeout(function() {
+          aiForWrap.classList.add('mono');
+        }, totalType + 2200);
+
+        setTimeout(function() {
+          aiForWrap.classList.remove('selected');
+        }, totalType + 3200);
+
+        setTimeout(function() {
+          aiThanksInner.classList.add('all-selected');
+        }, totalType + 4200);
+
+        setTimeout(function() {
+          aiThanksInner.classList.remove('all-selected');
+        }, totalType + 6200);
+
+        setTimeout(runAiThanksAnim, totalType + 7500);
+      }
+
+      var aiThanksRevealed = false;
+      var aiThanksObs = new IntersectionObserver(function(entries) {
+        if (entries[0].isIntersecting && !aiThanksRevealed) {
+          aiThanksRevealed = true;
+          aiThanksObs.disconnect();
+          runAiThanksAnim();
+        }
+      }, { threshold: 0.3 });
+      aiThanksObs.observe(aiThanksEl);
+
+      ai3Img.addEventListener('load', function() {
+        var c = ai3Canvas;
+        c.width = ai3Img.offsetWidth;
+        c.height = ai3Img.offsetHeight;
+        var ctx = c.getContext('2d');
+        var W = c.width, H = c.height;
+        var gap = 16;
+        var time = 0;
+        var DOTS = 350;
+        var morphDur = 3;
+
+        function genLine(arr,x1,y1,x2,y2,n) {
+          for (var i=0;i<n;i++){var t=i/(n-1);arr.push({x:x1+(x2-x1)*t,y:y1+(y2-y1)*t});}
+        }
+        function genRect(arr,x,y,w,h,n) {
+          var per=2*(w+h), each=Math.floor(n);
+          for(var i=0;i<each;i++){var t=i/each*per;
+            if(t<w)arr.push({x:x+t,y:y});
+            else if(t<w+h)arr.push({x:x+w,y:y+(t-w)});
+            else if(t<2*w+h)arr.push({x:x+w-(t-w-h),y:y+h});
+            else arr.push({x:x,y:y+h-(t-2*w-h)});
+          }
+        }
+        function genCluster(arr,cx,cy,cols,rows) {
+          for(var r=0;r<rows;r++)for(var cl=0;cl<cols;cl++){
+            if(Math.random()<0.75)arr.push({x:cx+cl*gap,y:cy+r*gap});
+          }
+        }
+        function genTriangle(arr,x,y,s,n) {
+          var third=Math.floor(n/3);
+          genLine(arr,x,y+s,x+s/2,y,third);
+          genLine(arr,x+s/2,y,x+s,y+s,third);
+          genLine(arr,x+s,y+s,x,y+s,n-third*2);
+        }
+        function genDiamond(arr,cx,cy,r,n) {
+          var q=Math.floor(n/4);
+          genLine(arr,cx,cy-r,cx+r,cy,q);
+          genLine(arr,cx+r,cy,cx,cy+r,q);
+          genLine(arr,cx,cy+r,cx-r,cy,q);
+          genLine(arr,cx-r,cy,cx,cy-r,n-q*3);
+        }
+
+        function buildState(id) {
+          var pts = [];
+          if (id === 0) {
+            genLine(pts,W*0.02,H*0.05,W*0.35,H*0.45,40);
+            genLine(pts,W*0.30,H*0.02,W*0.50,H*0.40,35);
+            genLine(pts,W*0.05,H*0.55,W*0.25,H*0.95,35);
+            genLine(pts,W*0.38,H*0.10,W*0.15,H*0.50,30);
+            genRect(pts,W*0.03,H*0.08,W*0.12,H*0.15,40);
+            genRect(pts,W*0.25,H*0.55,W*0.10,H*0.18,36);
+            genCluster(pts,W*0.08,H*0.30,5,4);
+            genCluster(pts,W*0.30,H*0.15,4,3);
+            genCluster(pts,W*0.02,H*0.70,5,5);
+            genLine(pts,W*0.10,H*0.48,W*0.40,H*0.48,20);
+            // 오른쪽 은은한 패턴
+            genLine(pts,W*0.60,H*0.10,W*0.85,H*0.35,20);
+            genLine(pts,W*0.75,H*0.60,W*0.90,H*0.85,15);
+            genCluster(pts,W*0.65,H*0.50,3,3);
+            genCluster(pts,W*0.80,H*0.20,2,3);
+            genRect(pts,W*0.70,H*0.70,W*0.08,H*0.10,20);
+          } else if (id === 1) {
+            genTriangle(pts,W*0.05,H*0.10,W*0.25,50);
+            genTriangle(pts,W*0.20,H*0.50,W*0.20,42);
+            genRect(pts,W*0.35,H*0.05,W*0.12,H*0.30,48);
+            genDiamond(pts,W*0.15,H*0.75,H*0.12,44);
+            genCluster(pts,W*0.30,H*0.50,5,5);
+            genCluster(pts,W*0.02,H*0.40,4,4);
+            genLine(pts,W*0.40,H*0.45,W*0.10,H*0.85,30);
+            genLine(pts,W*0.05,H*0.02,W*0.45,H*0.30,26);
+            // 오른쪽 은은한 패턴
+            genDiamond(pts,W*0.75,H*0.30,H*0.08,20);
+            genLine(pts,W*0.60,H*0.70,W*0.90,H*0.50,15);
+            genCluster(pts,W*0.70,H*0.80,3,2);
+            genCluster(pts,W*0.85,H*0.10,2,3);
+            genLine(pts,W*0.65,H*0.15,W*0.65,H*0.40,12);
+          } else if (id === 2) {
+            genDiamond(pts,W*0.20,H*0.25,H*0.18,55);
+            genDiamond(pts,W*0.10,H*0.70,H*0.10,40);
+            genRect(pts,W*0.32,H*0.45,W*0.15,H*0.20,50);
+            genLine(pts,W*0.05,H*0.05,W*0.45,H*0.05,25);
+            genLine(pts,W*0.05,H*0.95,W*0.45,H*0.95,25);
+            genTriangle(pts,W*0.30,H*0.08,W*0.15,40);
+            genCluster(pts,W*0.02,H*0.45,4,5);
+            genCluster(pts,W*0.35,H*0.75,4,3);
+            genLine(pts,W*0.25,H*0.50,W*0.25,H*0.90,20);
+            // 오른쪽 은은한 패턴
+            genTriangle(pts,W*0.65,H*0.15,W*0.12,18);
+            genRect(pts,W*0.75,H*0.55,W*0.10,H*0.12,22);
+            genCluster(pts,W*0.60,H*0.75,3,3);
+            genLine(pts,W*0.70,H*0.05,W*0.90,H*0.40,15);
+            genCluster(pts,W*0.85,H*0.45,2,2);
+          }
+          while (pts.length < DOTS) pts.push({x:Math.random()*W,y:Math.random()*H});
+          pts.length = DOTS;
+          return pts;
+        }
+
+        var states = [buildState(0), buildState(1), buildState(2)];
+        var curState = 0;
+        var dotData = [];
+        for (var i=0;i<DOTS;i++) {
+          dotData.push({ x:states[0][i].x, y:states[0][i].y, phase:Math.random()*Math.PI*2, alpha:Math.random()*0.15+0.08 });
+        }
+
+        var syms = [
+          { char:'✳', bx:[W*0.35,W*0.12,W*0.40], by:[H*0.18,H*0.60,H*0.08], phase:0 },
+          { char:'✳', bx:[W*0.24,W*0.38,W*0.08], by:[H*0.82,H*0.15,H*0.75], phase:1.5 },
+          { char:'○', bx:[W*0.38,W*0.05,W*0.30], by:[H*0.20,H*0.35,H*0.50], phase:0.8 },
+          { char:'○', bx:[W*0.32,W*0.42,W*0.15], by:[H*0.55,H*0.80,H*0.25], phase:2.2 },
+          { char:'□', bx:[W*0.01,W*0.28,W*0.38], by:[H*0.52,H*0.42,H*0.68], phase:1.0 },
+          { char:'□', bx:[W*0.36,W*0.03,W*0.22], by:[H*0.42,H*0.75,H*0.88], phase:2.8 },
+          { char:'5', bx:[W*0.01,W*0.20,W*0.05], by:[H*0.58,H*0.90,H*0.40], phase:0.5 },
+          { char:'3', bx:[W*0.15,W*0.40,W*0.30], by:[H*0.88,H*0.60,H*0.92], phase:1.8 }
+        ];
+
+        function draw() {
+          time += 0.004;
+          var stateT = (time / morphDur) % states.length;
+          var fromIdx = Math.floor(stateT) % states.length;
+          var toIdx = (fromIdx + 1) % states.length;
+          var t = stateT - Math.floor(stateT);
+          var ease = t < 0.5 ? 2*t*t : 1-Math.pow(-2*t+2,2)/2;
+
+          ctx.fillStyle = '#000';
+          ctx.fillRect(0, 0, W, H);
+
+          var fromS = states[fromIdx], toS = states[toIdx];
+          for (var i = 0; i < DOTS; i++) {
+            var d = dotData[i];
+            d.x = fromS[i].x + (toS[i].x - fromS[i].x) * ease;
+            d.y = fromS[i].y + (toS[i].y - fromS[i].y) * ease;
+            var pulse = Math.sin(time * 3 + d.phase) * 0.05;
+            var a = Math.max(0, d.alpha + pulse);
+            var fade = d.x > W * 0.55 ? 0.5 : 1;
+            a *= fade;
+            ctx.fillStyle = 'rgba(255,255,255,' + a + ')';
+            ctx.beginPath();
+            ctx.arc(d.x, d.y, 1.3, 0, Math.PI * 2);
+            ctx.fill();
+          }
+
+          ctx.font = '13px JetBrains Mono, monospace';
+          for (var j = 0; j < syms.length; j++) {
+            var s = syms[j];
+            var sx = s.bx[fromIdx] + (s.bx[toIdx] - s.bx[fromIdx]) * ease + Math.cos(time*1.2+s.phase)*2;
+            var sy = s.by[fromIdx] + (s.by[toIdx] - s.by[fromIdx]) * ease + Math.sin(time*1.5+s.phase)*3;
+            var sa = 0.18 + Math.sin(time + s.phase) * 0.05;
+            ctx.fillStyle = 'rgba(255,255,255,' + sa + ')';
+            ctx.fillText(s.char, sx, sy);
+          }
+
+          requestAnimationFrame(draw);
+        }
+        requestAnimationFrame(draw);
+      });
+
+      await new Promise(function(r) { if (ai1Img.complete) r(); else ai1Img.onload = r; });
+      terminal.scrollTop = ai1Wrap.offsetTop - terminal.offsetTop;
+      requestAnimationFrame(function() { requestAnimationFrame(function() {
+        ai1Img.style.transition = 'opacity 1s ease, transform 1s ease';
+        ai1Img.style.opacity = '1';
+        ai1Img.style.transform = 'translateY(0)';
+        aiAssetEls.forEach(function(el) { el.style.opacity = '1'; });
+        ai2Img.style.transition = 'opacity 1s ease 0.3s, transform 1s ease 0.3s';
+        ai2Img.style.opacity = '1';
+        ai2Img.style.transform = 'translateY(0)';
+        ai3Img.style.transition = 'opacity 1s ease 0.6s, transform 1s ease 0.6s';
+        ai3Img.style.opacity = '1';
+        ai3Img.style.transform = 'translateY(0)';
+        ai4Img.style.transition = 'opacity 1s ease 0.9s, transform 1s ease 0.9s';
+        ai4Img.style.opacity = '1';
+        ai4Img.style.transform = 'translateY(0)';
+        ai5Img.style.transition = 'opacity 1s ease 1.2s, transform 1s ease 1.2s';
+        ai5Img.style.opacity = '1';
+        ai5Img.style.transform = 'translateY(0)';
+        ai6Img.style.transition = 'opacity 1s ease 1.5s, transform 1s ease 1.5s';
+        ai6Img.style.opacity = '1';
+        ai6Img.style.transform = 'translateY(0)';
+        ai6AssetEls.forEach(function(el) { el.style.opacity = '1'; });
+      }); });
+    } else {
+      addLine('');
+      addLine('<span style="color:#D9D9D9">프로젝트 상세 내용이 들어갈 자리입니다.</span>');
+      addLine('');
+    }
+  }
+
+  // 아래에서 COMMANDS 객체에 resume 등 추가
+  Object.assign(COMMANDS, {
+    resume() {
+      addLine('');
+      addSectionBox('RESUME', (body) => {
+        addBoxLine(body, '');
+        const lines = FS['~/resume.pdf'].content();
+        lines.forEach(l => addBoxLine(body, l, 'accent'));
+        addBoxLine(body, '');
+      });
+      addLine('');
+    },
+
+    contact() {
+      addLine('');
+      addSectionBox('CONTACT', (body) => {
+        addBoxLine(body, '');
+        addBoxLine(body, `  <span style="color:var(--yellow)">✉</span>  ${DATA.email}`);
+        addBoxLine(body, `  <span style="color:var(--yellow)">⌘</span>  ${DATA.github}`);
+        addBoxLine(body, `  <span style="color:var(--yellow)">◉</span>  ${DATA.linkedin}`);
+        addBoxLine(body, `  <span style="color:var(--yellow)">⊕</span>  ${DATA.location}`);
+        addBoxLine(body, '');
+        addBoxLine(body, '  Feel free to reach out!', 'accent');
+        addBoxLine(body, '');
+      });
+      addLine('');
+    },
+
+    ls(args) {
+      const target = resolvePath(args) + (args && !args.endsWith('/') ? '' : '');
+      const dirKey = FS[target] ? target : target + '/';
+      const entry = FS[target] || FS[dirKey];
+      if (!entry) { addLine(`ls: cannot access '${args}': No such file or directory`, 'red'); return; }
+      if (entry.type !== 'dir') { addLine(args || target); return; }
+      addLine('');
+      entry.children.forEach(c => {
+        const isDir = c.endsWith('/');
+        addLine(`  ${isDir ? '<span style="color:var(--cyan)">📁</span>' : '<span style="color:var(--dim)">📄</span>'} ${isDir ? `<span style="color:var(--cyan);font-weight:700">${c}</span>` : c}`);
+      });
+      addLine('');
+    },
+
+    cat(args) {
+      if (!args) { addLine('cat: missing operand', 'red'); return; }
+      const path = resolvePath(args);
+      const entry = FS[path];
+      if (!entry) { addLine(`cat: ${args}: No such file or directory`, 'red'); return; }
+      if (entry.type === 'dir') { addLine(`cat: ${args}: Is a directory`, 'red'); return; }
+      addLine('');
+      entry.content().forEach(l => addLine(l));
+      addLine('');
+    },
+
+    cd(args) {
+      if (!args || args === '~') { currentPath = '~'; updateStatus(); return; }
+      const target = resolvePath(args);
+      const dirKey = target.endsWith('/') ? target : target + '/';
+      if (FS[target]?.type === 'dir' || FS[dirKey]) {
+        currentPath = target;
+        updateStatus();
+      } else {
+        addLine(`cd: ${args}: No such file or directory`, 'red');
+      }
+    },
+
+    pwd() { addLine(`/home/seul${currentPath.slice(1)}`); },
+    whoami() { addLine('seul'); },
+    hostname() { addLine(HOST); },
+    date() { addLine(new Date().toString()); },
+    echo(args) { addLine(args || ''); },
+
+    clear() { output.innerHTML = ''; },
+
+    history() {
+      addLine('');
+      commandHistory.forEach((c, i) => addLine(`  ${String(i + 1).padStart(4)}  ${c}`, 'dim'));
+      addLine('');
+    },
+
+    neofetch() {
+      const info = [
+        `<span style="color:var(--accent);font-weight:700">seul@portfolio.dev</span>`,
+        `<span style="color:var(--border)">${'─'.repeat(24)}</span>`,
+        `<span style="color:var(--cyan)">OS:</span>     Portfolio OS v1.0`,
+        `<span style="color:var(--cyan)">Host:</span>   ${DATA.name}`,
+        `<span style="color:var(--cyan)">Kernel:</span> ${DATA.title}`,
+        `<span style="color:var(--cyan)">Shell:</span>  portfolio-sh 1.0`,
+        `<span style="color:var(--cyan)">Theme:</span>  Terminal Dark [Accent]`,
+        `<span style="color:var(--cyan)">Lang:</span>   ${DATA.skills.languages.join(', ')}`,
+        `<span style="color:var(--cyan)">Tools:</span>  ${DATA.skills.tools.join(', ')}`,
+        `<span style="color:var(--cyan)">Uptime:</span> ${new Date().getFullYear() - 2019}+ years coding`,
+      ];
+      const logo = [
+        '     ██╗  ██╗██╗',
+        '     ██║  ██║██║',
+        '     ███████║██║',
+        '     ██╔══██║██║',
+        '     ██║  ██║██║',
+        '     ╚═╝  ╚═╝╚═╝',
+      ];
+      addLine('');
+      const maxLines = Math.max(logo.length, info.length);
+      for (let i = 0; i < maxLines; i++) {
+        const l = (logo[i] || '').padEnd(22);
+        const r = info[i] || '';
+        addLine(`<span style="color:var(--accent)">${l}</span>  ${r}`);
+      }
+      const colors = ['#000','#ff6568','#00ff9c','#FFD725','#00D084','#d2a8ff','#e8a84c','#c9d1d9'];
+      const blocks = colors.map(c => `<span style="background:${c}">   </span>`).join('');
+      addLine('                        ' + blocks);
+      addLine('');
+    },
+
+    '1'()  { COMMANDS.home(); },
+    async '2'()  { await COMMANDS.about(); },
+    async '3'()  { await COMMANDS.work(); },
+    async '4'()  { await COMMANDS.project(); },
+  });
+
+  // ── Command Processor ──
+  async function processCommand(input) {
+    const trimmed = input.trim();
+    if (!trimmed) return;
+
+    commandHistory.push(trimmed);
+    historyIndex = commandHistory.length;
+    cmdCount++;
+
+    const parts = trimmed.split(/\s+/);
+    const cmd = parts[0].toLowerCase();
+    const args = parts.slice(1).join(' ');
+
+    const skipNav = ['1', 'home', '4', 'project'];
+    if (COMMANDS[cmd]) {
+      await COMMANDS[cmd](args);
+    } else {
+      addLine(`command not found: ${cmd}. Type <span class="nav-key">help</span> for available commands.`, 'red');
+      addLine('');
+    }
+    if (!skipNav.includes(cmd)) {
+      addLine(`<span class="nav-key">[1]</span> <span class="nav-label">home</span>    <span class="nav-key">[2]</span> <span class="nav-label">about</span>    <span class="nav-key">[3]</span> <span class="nav-label">work</span>    <span class="nav-key">[4]</span> <span class="nav-label">project</span>`);
+      addLine('');
+      addLine('<span style="color:#888888">[ 번호 선택, Enter로 확인 ]</span>');
+      addLine('');
+      addLine('');
+      addLine('');
+    }
+    updateStatus();
+  }
+
+  // ── Highlights ──
+  let highlightsShown = false;
+  async function showHighlights() {
+    if (highlightsShown) return;
+    highlightsShown = true;
+    navPanel.style.display = 'block';
+    requestAnimationFrame(function() { navPanel.classList.add('show'); });
+
+    const hadPressEnter = !!pressEnterLine;
+    if (pressEnterLine) {
+      pressEnterLine.remove();
+      pressEnterLine = null;
+    }
+    if (!hadPressEnter) addLine('');
+    await showProgressBar();
+    if (!hadPressEnter) addLine('');
+    const hlTitle = addLine('<span style="color:var(--accent);font-weight:700;font-size:16px;">Highlights</span>');
+    await fadeIn(hlTitle, 400);
+
+    addLine('');
+    const hlItems = [
+      addLine('<span style="color:var(--dim)">●</span> <span style="color:#D9D9D9;font-weight:700;">블록체인·스테이블코인 플랫폼 프로덕트 디자이너</span>'),
+    ];
+    var hlTl1 = [
+      addLine('<span style="color:var(--dim)">└</span> <span style="color:#888888">스테이블코인, 블록체인 노드 인프라, Wallet 등 제품에서 복잡한 기술·정책 제약을 UX 플로우로 설계</span>', 'timeline-line'),
+      addLine('', 'timeline-line'),
+    ];
+    for (const el of [...hlItems, ...hlTl1]) { el.style.opacity='0'; el.style.transition='opacity 400ms ease'; }
+    requestAnimationFrame(() => [...hlItems, ...hlTl1].forEach(el => { el.style.opacity='1'; }));
+    await sleep(300);
+
+    const hlItems2 = [
+      addLine('<span style="color:var(--dim)">●</span> <span style="color:#D9D9D9;font-weight:700;">지표로 결과를 만든 UX 개선 경험</span>'),
+    ];
+    var hlTl2 = [
+      addLine('<span style="color:var(--dim)">└</span> <span style="color:#888888">UX 구조 개선을 통해 DAP3+30%, MAP+16% 활성 사용자 지표 성장에 기여</span>', 'timeline-line'),
+      addLine('', 'timeline-line'),
+    ];
+    for (const el of [...hlItems2, ...hlTl2]) { el.style.opacity='0'; el.style.transition='opacity 400ms ease'; }
+    requestAnimationFrame(() => [...hlItems2, ...hlTl2].forEach(el => { el.style.opacity='1'; }));
+    await sleep(300);
+
+    const hlItems3 = [
+      addLine('<span style="color:var(--dim)">●</span> <span style="color:#D9D9D9;font-weight:700;">디자인을 \'결과물\'이 아니라 \'운영 가능한 구조\'로 만듦</span>'),
+    ];
+    var hlTl3 = [
+      addLine('<span style="color:var(--dim)">└</span> <span style="color:#888888">Figma와 Claude-code의 AI 기반 팀 내 디자인 워크플로우 구축, 사내 AI 세미나 강의</span>'),
+    ];
+    for (const el of [...hlItems3, ...hlTl3]) { el.style.opacity='0'; el.style.transition='opacity 400ms ease'; }
+    requestAnimationFrame(() => [...hlItems3, ...hlTl3].forEach(el => { el.style.opacity='1'; }));
+    await sleep(300);
+
+    addLine('');
+    addLine('');
+    addLine('');
+    const navEl = addLine(`<span class="nav-key">[1]</span> <span class="nav-label">home</span>    <span class="nav-key">[2]</span> <span class="nav-label">about</span>    <span class="nav-key">[3]</span> <span class="nav-label">work</span>    <span class="nav-key">[4]</span> <span class="nav-label">project</span>`);
+    await fadeIn(navEl, 400);
+    addLine('');
+    const navHint = addLine('<span style="color:#888888">[ 번호 선택, Enter로 확인 ]</span>');
+    await fadeIn(navHint, 400);
+    addLine('');
+    addLine('');
+    showPrompt();
+  }
+
+  // ── Input Handling ──
+  async function showProgressBar() {
+    const barWidth = 16;
+    const line = addLine('');
+    for (let i = 0; i <= barWidth; i++) {
+      const filled = '█'.repeat(i);
+      const empty = '░'.repeat(barWidth - i);
+      const pct = Math.round((i / barWidth) * 100);
+      line.innerHTML = `<span style="color:#5F5F5F">Loading... [${filled}${empty}] ${pct}%</span>`;
+      await sleep(30);
+    }
+    await sleep(200);
+    line.remove();
+    addLine('');
+  }
+
+  var inProjectSelection = false;
+  var homeReady = false;
+
+  cmdInput.addEventListener('keydown', async (e) => {
+    if (inProjectSelection && (e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === 'Enter')) {
+      return;
+    }
+    if (e.key === 'Enter') {
+      const val = cmdInput.value.trim();
+      if (!val) {
+        if (!homeReady) return;
+        await showHighlights();
+        return;
+      }
+      cmdInput.value = '';
+      var navCmds = ['1','2','3','4','home','about','work','project'];
+      var moduleNames = {'1':'home','2':'about','3':'work','4':'project','home':'home','about':'about','work':'work','project':'project'};
+      if (navCmds.includes(val.trim().toLowerCase())) {
+        cmdInput.placeholder = '';
+        var modName = moduleNames[val.trim().toLowerCase()] || val.trim().toLowerCase();
+        addLine(`<span style="color:var(--dim)">$ cd ~/${modName}</span>`);
+        var sysMsg = addLine(`<span style="color:var(--dim)">[system] loading ${modName} module...</span>`);
+        sysMsg.style.opacity = '0'; sysMsg.style.transition = 'opacity 300ms ease';
+        requestAnimationFrame(() => { sysMsg.style.opacity = '1'; });
+        await sleep(400);
+      } else {
+        await showProgressBar();
+      }
+      await processCommand(val);
+      if (highlightsShown && navCmds.includes(val.trim().toLowerCase())) {
+        navPanel.style.display = 'block';
+        requestAnimationFrame(function() { navPanel.classList.add('show'); });
+      }
+      showPrompt();
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      if (historyIndex > 0) {
+        historyIndex--;
+        cmdInput.value = commandHistory[historyIndex];
+      }
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      if (historyIndex < commandHistory.length - 1) {
+        historyIndex++;
+        cmdInput.value = commandHistory[historyIndex];
+      } else {
+        historyIndex = commandHistory.length;
+        cmdInput.value = '';
+      }
+    } else if (e.key === 'Tab') {
+      e.preventDefault();
+      autocomplete();
+    } else if (e.key === 'l' && e.ctrlKey) {
+      e.preventDefault();
+      COMMANDS.clear();
+    }
+  });
+
+  function autocomplete() {
+    const val = cmdInput.value;
+    const parts = val.split(/\s+/);
+    if (parts.length <= 1) {
+      const cmds = [...Object.keys(COMMANDS), 'help'];
+      const matches = cmds.filter(c => c.startsWith(parts[0]));
+      if (matches.length === 1) cmdInput.value = matches[0] + ' ';
+    } else {
+      const partial = parts[parts.length - 1];
+      const allPaths = Object.keys(FS);
+      const matches = allPaths
+        .map(p => p.replace('~/', ''))
+        .filter(p => p.startsWith(partial.replace('~/', '')));
+      if (matches.length === 1) {
+        parts[parts.length - 1] = '~/' + matches[0];
+        cmdInput.value = parts.join(' ');
+      }
+    }
+  }
+
+  terminal.addEventListener('click', () => {
+    cmdInput.focus();
+  });
+
+  // ── Home Screen ──
+  async function fadeIn(el, duration = 500) {
+    el.style.opacity = '0';
+    el.style.transition = `opacity ${duration}ms ease`;
+    requestAnimationFrame(() => { el.style.opacity = '1'; });
+    await sleep(duration);
+  }
+
+  let skipHomeAnim = false;
+
+  async function animSleep(ms) {
+    if (skipHomeAnim) return;
+    await sleep(ms);
+  }
+
+  async function showHomeScreen(animate = true) {
+    skipHomeAnim = false;
+
+    function onEnterDuringHome(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        skipHomeAnim = true;
+        document.removeEventListener('keydown', onEnterDuringHome);
+      }
+    }
+    if (animate && !skipHomeAnim) document.addEventListener('keydown', onEnterDuringHome);
+
+    addLine('');
+
+    // 1. FROM 박스
+    const vibeBox = document.createElement('div');
+    vibeBox.style.cssText = 'border:1px solid var(--accent);padding:10px 16px;margin:0 0 36px 0;display:inline-block;';
+    vibeBox.innerHTML = '<span style="color:var(--accent);font-size:13px;font-family:JetBrains Mono,monospace;">FROM(　) ✳ 답보다 질문에서 출발합니다.</span>';
+    output.appendChild(vibeBox);
+    if (animate && !skipHomeAnim) await fadeIn(vibeBox, 500);
+    else vibeBox.style.opacity = '1';
+
+    // 2. PORTFOLIO 아스키아트
+    const asciiEls = ASCII_PORTFOLIO.split('\n').map(l => addLine(l, 'ascii-art'));
+    if (animate && !skipHomeAnim) {
+      asciiEls.forEach(el => { el.style.opacity = '0'; el.style.transition = 'opacity 600ms ease'; });
+      requestAnimationFrame(() => asciiEls.forEach(el => { el.style.opacity = '1'; }));
+      await animSleep(700);
+    }
+
+    addLine('');
+
+    // 3. 이슬 - Product Designer
+    const nameEl = addLine(`<span style="color:#D9D9D9;font-weight:700;font-size:16px;">이슬</span> <span style="color:#D9D9D9">- Product Designer</span>`);
+    if (animate && !skipHomeAnim) await fadeIn(nameEl, 400);
+
+    addLine('<span style="line-height:0.5;display:block;">&nbsp;</span>');
+
+    // 4. 소개글
+    const introTexts = [
+      '안녕하세요. 복잡한 시장의 문제에서 기회를 발견하고,',
+      '사용자 관점의 UX로 구조화해온 Product Designer 이슬입니다.',
+      '금융·블록체인·AI 처럼 기술과 제약이 얽힌 도메인에서 서비스 설계부터 품질 관리까지 책임지며,',
+      '안정적인 운영과 사용자 경험의 성장을 동시에 만들어왔습니다.',
+    ];
+    for (const text of introTexts) {
+      const el = addLine(`<span style="color:#D9D9D9">${text}</span>`);
+      if (animate && !skipHomeAnim) {
+        el.style.opacity = '0';
+        el.style.transition = 'opacity 400ms ease';
+        requestAnimationFrame(() => { el.style.opacity = '1'; });
+        await animSleep(150);
+      }
+    }
+
+    if (animate && !skipHomeAnim) await animSleep(300);
+
+    // 5. system 텍스트
+    addLine('');
+    const sysEl = addLine('[system] vibe-coded with Claude Code × Opus 4.5', 'dim');
+    if (animate && !skipHomeAnim) await fadeIn(sysEl, 400);
+
+    // 6. Enter 안내 또는 바로 Highlights
+    document.removeEventListener('keydown', onEnterDuringHome);
+
+    if (skipHomeAnim) {
+      // 애니메이션 중 Enter를 눌렀으면 바로 Highlights
+      await showHighlights();
+    } else {
+      addLine('');
+      pressEnterLine = addLine('<span style="color:#00D084;animation:fadeInOut 2s ease-in-out infinite;">[ Enter를 눌러 계속하세요 ]</span>');
+      if (animate) await fadeIn(pressEnterLine, 400);
+      addLine('');
+    }
+  }
+
+  // ── Boot Sequence ──
+  async function boot() {
+    // 부트 시작부터 Enter 감지 (document 레벨)
+    function onEnterDuringBoot(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        skipHomeAnim = true;
+        document.removeEventListener('keydown', onEnterDuringBoot);
+      }
+    }
+    document.addEventListener('keydown', onEnterDuringBoot);
+
+    await typeText('$ ssh seul,Lee@portfolio.com', TYPING_SPEED, 'dim');
+    if (!skipHomeAnim) await sleep(SSH_DELAY);
+
+    addLine('연결 중... <span style="color:#ff6568">seul,Lee.portfolio.com</span>...', 'dim');
+    if (!skipHomeAnim) await sleep(800);
+
+    addLine('<img src="images/icons/icon-check.svg" style="vertical-align:middle;margin-right:4px;width:14px;height:14px;"> 연결 완료 (지연시간: 2ms)');
+    if (!skipHomeAnim) await sleep(300);
+
+    addLine('[system] node v20.11.0 | next 14.2.35 | seoul-kr-1', 'dim');
+    addLine('');
+
+    if (!skipHomeAnim) await sleep(400);
+
+    document.removeEventListener('keydown', onEnterDuringBoot);
+    await showHomeScreen(true);
+    homeReady = true;
+    showPrompt();
+  }
+
+  boot();
+})();
+</script>
+</body>
+</html>
